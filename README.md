@@ -4,7 +4,7 @@ This repo is how we will get the data we need for analysis.
 
 ## Needs
 
-## **Quiz Stats**
+## *Quiz Stats*
 
 ## Scores 
 
@@ -142,7 +142,16 @@ Columns:
     - Col 2 comes from call 1 and does ...
 
 
-## Content Stats
+
+
+
+
+
+
+
+
+
+## *Content Stats*
 
 ## Number of page views by a student on each LMS page
 
@@ -225,7 +234,16 @@ Columns:
 - Col 2:
     - Col 2 comes from call 1 and does ...
 
-## Review Stats
+
+
+
+
+
+
+
+
+
+## *Review Stats*
 
 ## Reviewer feedback (text sent to students about their performance)
 
@@ -365,7 +383,13 @@ Columns:
     - Col 2 comes from call 1 and does ...
 
 
-## Other
+
+
+
+
+
+
+## *Other*
 
 ## Number of logins per day for each student
 
