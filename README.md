@@ -2,11 +2,11 @@
 
 This repo is how we will get the data we need for analysis. 
 
-## Needs
+# Needs
 
 ## *Quiz Stats*
 
-## Scores 
+## Studnet Quiz Scores 
 
 ##### Questions for Henrie
 - Q1
@@ -33,7 +33,7 @@ Columns:
 - Col 2:
     - Col 2 comes from call 1 and does ...
 
-## Number of attempts 
+## Number of Attempts By Student
 
 ##### Questions for Henrie
 - Q1
