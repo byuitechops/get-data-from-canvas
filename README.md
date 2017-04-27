@@ -4,7 +4,7 @@ This repo is how we will get the data we need for analysis.
 
 ## Needs
 
-## *Quiz Stats*
+## **Quiz Stats**
 
 ## Scores 
 
