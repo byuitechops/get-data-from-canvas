@@ -228,6 +228,7 @@ Columns:
     - Number of instances
     
 ## Time stamp of each page view by a student
+(same as above)
 
 ##### Questions for Henrie
 - Q1
@@ -237,14 +238,15 @@ Columns:
 
 *Calls Needed:*
 
-- Call 1
+- (same as above) GET /api/v1/users/:user_id/page_views
 - Call 2
 
 *Explanation of Calls:*
 
-if needed
+In a PageView Object, there is an attribute "created_at" that contains the date-time-stamp of when the GET request the student initiated was made.
 
 *CSV Format:*
+(same as above)
 
 Rows: Each row is a student that ...
 
