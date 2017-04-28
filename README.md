@@ -228,22 +228,26 @@ Columns:
     - Number of instances
     
 ## Time stamp of each page view by a student
-(same as above)
+(SAME AS ABOVE)
 
 ##### Questions for Henrie
 - Q1
 - Q2
 
-*Why:* this is why we need this
+*Why:* To know when exactly a student accessed a certain page on a course, in the hopes that student activity would be accurately redered.
 
 *Calls Needed:*
 
-- (same as above) GET /api/v1/users/:user_id/page_views
-- Call 2
+- (SAME AS ABOVE)
+- GET /api/v1/users/:user_id/page_views
+- https://canvas.instructure.com/doc/api/users.html#method.page_views.index
+- Parameters:
+-  start_time
+-  end_time
 
 *Explanation of Calls:*
 
-In a PageView Object, there is an attribute "created_at" that contains the date-time-stamp of when the GET request the student initiated was made.
+In a PageView Object, there is an property named "created_at" that contains the date-time-stamp of when the GET request the student initiated was made.
 
 *CSV Format:*
 (same as above)
@@ -257,21 +261,26 @@ Columns:
     - Col 2 comes from call 1 and does ...
 
 ## Time spent by a student on a page
+(SAME AS ABOVE)
 
 ##### Questions for Henrie
 - Q1
 - Q2
 
-*Why:* this is why we need this
+*Why:* To know how long a student spent on a certain page.  For instance, if we wanted to know how long it took a student to read an article or take a quiz, having this information would benefit the teacher.
 
 *Calls Needed:*
 
-- Call 1
-- Call 2
+- (SAME AS ABOVE)
+- GET /api/v1/users/:user_id/page_views
+- https://canvas.instructure.com/doc/api/users.html#method.page_views.index
+- Parameters:
+-  start_time
+-  end_time
 
 *Explanation of Calls:*
 
-if needed
+In a PageView Object, there is a property named "interaction_seconds" that contains the approximation of the number of seconds the user was on the page. 
 
 *CSV Format:*
 
