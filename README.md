@@ -252,13 +252,13 @@ In a PageView Object, there is an property named "created_at" that contains the 
 *CSV Format:*
 (same as above)
 
-Rows: Each row is a student that ...
+Rows: Each row is a student that we are querying
 
 Columns:
 - Col 1:
-    - Col 1 comes from call 2 and does ...
+    - URL the user viewed
 - Col 2:
-    - Col 2 comes from call 1 and does ...
+    - Timestamp of when the user viewed that URL
 
 ## Time spent by a student on a page
 (SAME AS ABOVE)
@@ -284,13 +284,13 @@ In a PageView Object, there is a property named "interaction_seconds" that conta
 
 *CSV Format:*
 
-Rows: Each row is a student that ...
+Rows: Each row is a student that we are querying
 
 Columns:
 - Col 1:
-    - Col 1 comes from call 2 and does ...
+    - URL a student viewed
 - Col 2:
-    - Col 2 comes from call 1 and does ...
+    - Total time spent on that URL
 
 
 
