@@ -76,7 +76,7 @@ answers, but returns something else, so wait until it works i guess
 
 ## *Content Stats*
 
-## Number of page views by a student on each LMS page
+## TimeStamp, Time Spent, and Number of page views by a student on each LMS page
 
 ##### Questions for Henrie
 - Q1
@@ -86,8 +86,11 @@ answers, but returns something else, so wait until it works i guess
 
 *Calls Needed:*
 
-- GET /api/v1/users/:user_id/page_views
-- https://canvas.instructure.com/doc/api/users.html#method.page_views.index
+- [List user page views](https://canvas.instructure.com/doc/api/users.html#method.page_views.index)
+```
+GET /api/v1/users/:user_id/page_views
+```
+
 - Parameters:
 -  start_time
 -  end_time
@@ -97,6 +100,7 @@ answers, but returns something else, so wait until it works i guess
 Perform an https GET request to the given URL.  ":user_id" can be replaced with "self" for the id of the user accessing the id.
 This call will return a list of PageView objects.  In the object is found the URL of the page that the student viewed.
 A PageView Object looks like the following:
+```
 // The record of a user page view access in Canvas
 {
   // A UUID representing the page view.  This is also the unique request id
@@ -135,8 +139,7 @@ A PageView Object looks like the following:
   // The page view links to define the relationships
   "links": {"user":1234,"account":1234}
 }
-
-
+```
 
 *CSV Format:*
 
@@ -149,89 +152,14 @@ Columns:
     - URL visited
 - Col 2:
     - Number of instances
-    
-## Time stamp of each page view by a student
-(SAME AS ABOVE)
-
-##### Questions for Henrie
-- Q1
-- Q2
-
-*Why:* To know when exactly a student accessed a certain page on a course, in the hopes that student activity would be accurately redered.
-
-*Calls Needed:*
-
-- (SAME AS ABOVE)
-- GET /api/v1/users/:user_id/page_views
-- https://canvas.instructure.com/doc/api/users.html#method.page_views.index
-- Parameters:
--  start_time
--  end_time
-
-*Explanation of Calls:*
-
-In a PageView Object, there is an property named "created_at" that contains the date-time-stamp of when the GET request the student initiated was made.
-
-*CSV Format:*
-(same as above)
-
-Rows: Each row is a student that we are querying
-
-Columns:
-- Col 1:
-    - URL the user viewed
-- Col 2:
-    - Timestamp of when the user viewed that URL
-
-## Time spent by a student on a page
-(SAME AS ABOVE)
-
-##### Questions for Henrie
-- Q1
-- Q2
-
-*Why:* To know how long a student spent on a certain page.  For instance, if we wanted to know how long it took a student to read an article or take a quiz, having this information would benefit the teacher.
-
-*Calls Needed:*
-
-- (SAME AS ABOVE)
-- GET /api/v1/users/:user_id/page_views
-- https://canvas.instructure.com/doc/api/users.html#method.page_views.index
-- Parameters:
--  start_time
--  end_time
-
-*Explanation of Calls:*
-
-In a PageView Object, there is a property named "interaction_seconds" that contains the approximation of the number of seconds the user was on the page. 
-
-*CSV Format:*
-
-Rows: Each row is a student that we are querying
-
-Columns:
-- Col 1:
-    - URL a student viewed
-- Col 2:
-    - Total time spent on that URL
-
-
-
-
-
-
-
-
 
 
 ## *Review Stats*
 
 ## Reviewer feedback (text sent to students about their performance)
 
-##### Questions for Henrie
-- Q1
-- Q2
-
+See the *important* comment in the *Who reviewed an assessment submission* section
+<!--
 *Why:* To provide students with specific feedback on how they can improve.
 
 *Calls Needed:*
@@ -255,6 +183,7 @@ Columns:
     - The comment the reviewer desires to apply to the question.
 - Col 3:
     - (IF DESIRED) The new grade the reviewer desires to apply to the question.
+-->
     
     
 ## Time stamp on when assessment was completed (ready for review)
@@ -267,10 +196,14 @@ Columns:
 
 *Calls Needed:*
 
-- (FOR ALL QUIZ SUBMISSIONS FOR THIS QUIZ) GET /api/v1/courses/:course_id/quizzes/:quiz_id/submissions
-- https://canvas.instructure.com/doc/api/quiz_submissions.html#method.quizzes/quiz_submissions_api.index
-- (FOR THE QUIZ SUBMSSION FOR A STUDENT ON THIS QUIZ) GET /api/v1/courses/:course_id/quizzes/:quiz_id/submission
-- https://canvas.instructure.com/doc/api/quiz_submissions.html#method.quizzes/quiz_submissions_api.submission
+- [FOR ALL QUIZ SUBMISSIONS FOR THIS QUIZ](https://canvas.instructure.com/doc/api/quiz_submissions.html#method.quizzes/quiz_submissions_api.index)
+```
+GET /api/v1/courses/:course_id/quizzes/:quiz_id/submissions
+``` 
+- [FOR THE QUIZ SUBMSSION FOR A STUDENT ON THIS QUIZ](https://canvas.instructure.com/doc/api/quiz_submissions.html#method.quizzes/quiz_submissions_api.submission)
+```
+GET /api/v1/courses/:course_id/quizzes/:quiz_id/submission
+```
 
 *Explanation of Calls:*
 
@@ -311,16 +244,14 @@ I haven't found an api yet that states that an assignment can have an "open" and
     
 ## Who reviewed an assessment submission
 
-##### Questions for Henrie
-- Q1
-- Q2
-
 *Why:* this is why we need this
 
 *Calls Needed:*
 
-- /api/v1/courses/:course_id/assignments/:assignment_id/submissions/:user_id
-- https://canvas.instructure.com/doc/api/submissions.html#method.submissions_api.show
+- [Get a single submission](https://canvas.instructure.com/doc/api/submissions.html#method.submissions_api.show)
+```
+GET /api/v1/courses/:course_id/assignments/:assignment_id/submissions/:user_id
+```
 
 *Explanation of Calls:*
 
@@ -328,23 +259,6 @@ This GET request returns a submission Object.  In the submission is a property n
 
 ** IMPORTANT **
 This object, the Submission Object also contains a property named "submission_comments" that has the ability to contain Submission Comment Objects that have *who* gave a comment on a submission (instructor feedback) and *when* the comment was made.  This may help with the first element in this subsection ^^.
-
-*CSV Format:*
-
-Rows: Each row is a student that has submitted an assignment.
-
-Columns:
-- Col 1:
-    - user_id
-- Col 2:
-    - grader_id
-- Col 3:
-    - Grader's Name
-
-
-
-
-
 
 
 
