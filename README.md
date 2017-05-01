@@ -83,16 +83,21 @@ This call will return a list of PageView objects. We will be using the *created_
 
 ## Reviewer feedback (text sent to students about their performance)
 
-See the *important* comment in the *Who reviewed an assessment submission* section
-<!--
-*Why:* To provide students with specific feedback on how they can improve.
+*Why:* To get comments that a teachers have provided to 
 
 *Calls Needed:*
+- [Get a single submission](https://canvas.instructure.com/doc/api/submissions.html#method.submissions_api.show)
+```
+GET /api/v1/courses/:course_id/assignments/:assignment_id/submissions/:user_id?include[]=submission_comments
+```
 
-- PUT /api/v1/courses/:course_id/quizzes/:quiz_id/submissions/:id
-- https://canvas.instructure.com/doc/api/quiz_submissions.html#method.quizzes/quiz_submissions_api.update
+- [Update student question scores and comments](https://canvas.instructure.com/doc/api/quiz_submissions.html#method.quizzes/quiz_submissions_api.update)
+```
+PUT /api/v1/courses/:course_id/quizzes/:quiz_id/submissions/:id
+``` 
 
 *Explanation of Calls:*
+This GET request returns a submission Object.  In this Submission Object is found a property named "submission_comments".  This property has the ability to store comment objects that have a time stamp and who gave a comment.
 
 Within the 'questions' property of the PUT request object, there is a space for each question of the quiz
 you want to put a comment on/change grade of.  Here, you can change the comments and the grade for each question.  As stated in the URL: Type Hash.  The keys are the specific question IDs in the quiz, and the values are hashes of 'score' and 'comment' entries.
@@ -100,7 +105,14 @@ you want to put a comment on/change grade of.  Here, you can change the comments
 *CSV Format:*
 
 Rows: Each row is a student that has completed a quiz
+GET:
+Columns:
+- Col 1:
+    - The user_id 
+- Col 2:
+    - The comments that were retrieved for that user_id
 
+PUT:
 Columns:
 - Col 1:
     - The Question ID to comment upon.
@@ -108,7 +120,6 @@ Columns:
     - The comment the reviewer desires to apply to the question.
 - Col 3:
     - (IF DESIRED) The new grade the reviewer desires to apply to the question.
--->
     
     
 ## Time stamp on when assessment was completed (ready for review)
@@ -166,6 +177,16 @@ GET /api/v1/courses/:course_id/gradebook_history/feed
 *Explanation of Calls:*
 
 I haven't found an api yet that states that an assignment can have an "open" and "closed" time for review.  Instead, I've found that there are gradeChangeEvents Objects that have a time stamp on them for an event on which you changed a grade.
+
+*CSV Format:*
+
+Rows: The names of the graders that we are looking at.
+
+Columns:
+- Col 1: 
+    - grader_id.
+- Col 2:
+    - The value for "graded_at" property.
     
 ## Who reviewed an assessment submission
 
@@ -178,13 +199,20 @@ I haven't found an api yet that states that an assignment can have an "open" and
 GET /api/v1/courses/:course_id/assignments/:assignment_id/submissions/:user_id
 ```
 
+
 *Explanation of Calls:*
 
 This GET request returns a submission Object.  In the submission is a property named "grader_id" that has the user id of the grader who reviewed and assigned a grade to a submission.  
 
-** IMPORTANT **
-This object, the Submission Object also contains a property named "submission_comments" that has the ability to contain Submission Comment Objects that have *who* gave a comment on a submission (instructor feedback) and *when* the comment was made.  This may help with the first element in this subsection ^^.
+*CSV Format:*
 
+Rows: Submission_Id
+
+Columns:
+- Col 1: 
+    - grader_id.
+- Col 2:
+    - The Grader's Name.
 
 
 ## *Other*
@@ -195,7 +223,7 @@ This object, the Submission Object also contains a property named "submission_co
 
 *Calls Needed:*
 
-- https://canvas.instructure.com/doc/api/authentications_log.html#method.authentication_audit_api.for_user
+- [Query by user](https://canvas.instructure.com/doc/api/authentications_log.html#method.authentication_audit_api.for_user)
 ```
 GET /api/v1/audit/authentication/users/:user_id
 ```
