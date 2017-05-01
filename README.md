@@ -338,28 +338,30 @@ Columns:
 
 ##### Questions for Henrie
 - By assessment, do you mean quiz?
-- Q2
+- Is this for all quizzes, or by each individual student?
 
-*Why:* this is why we need this
+*Why:* To know when each quiz was completed, so that reviewers can get the go ahead on when to review.  Also, so that teachers may know when a student submitted a quiz.
 
 *Calls Needed:*
 
-- Call 1
-- Call 2
+- (FOR ALL QUIZ SUBMISSIONS FOR THIS QUIZ) GET /api/v1/courses/:course_id/quizzes/:quiz_id/submissions
+- https://canvas.instructure.com/doc/api/quiz_submissions.html#method.quizzes/quiz_submissions_api.index
+- (FOR THE QUIZ SUBMSSION FOR A STUDENT ON THIS QUIZ) GET /api/v1/courses/:course_id/quizzes/:quiz_id/submission
+- https://canvas.instructure.com/doc/api/quiz_submissions.html#method.quizzes/quiz_submissions_api.submission
 
 *Explanation of Calls:*
 
-if needed
+These calls return in the case of the first a list of Quiz Submission objects, or in the case of the second, an individual Quiz Submission Object.  In this object is found the property "finished_at" that returns the value of when the quiz was finished and submitted in the following format: "2013-11-07T13:16:18Z".
 
 *CSV Format:*
 
-Rows: Each row is a student that ...
+Rows: Each row is a student that has submitted a quiz
 
 Columns:
-- Col 1:
-    - Col 1 comes from call 2 and does ...
+- Col 1: 
+    - The user_id of the student.
 - Col 2:
-    - Col 2 comes from call 1 and does ...
+    - The finished_at timestamp.
     
     
 ## Time stamp on when assessment was opened for review 
