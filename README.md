@@ -8,146 +8,69 @@ This repo is how we will get the data we need for analysis.
 
 ## Studnet Quiz Scores 
 
-##### Questions for Henrie
-- Q1
-- Q2
-
-*Why:* this is why we need this
+*Why:* Assuming to see the results of all the students who have take the quiz
 
 *Calls Needed:*
 
-- Call 1
-- Call 2
-
+- https://canvas.instructure.com/doc/api/quiz_submissions.html#method.quizzes/quiz_submissions_api.index
+```
+GET /api/v1/courses/:course_id/quizzes/:quiz_id/submissions
+```
 *Explanation of Calls:*
 
-if needed
-
-*CSV Format:*
-
-Rows: Each row is a student that ...
-
-Columns:
-- Col 1:
-    - Col 1 comes from call 2 and does ...
-- Col 2:
-    - Col 2 comes from call 1 and does ...
+Returns an array of submissions, the submission contains a score property
 
 ## Number of Attempts By Student
 
-##### Questions for Henrie
-- Q1
-- Q2
-
-*Why:* this is why we need this
+*Why:* Need to see how many time the student has attempted the quiz
 
 *Calls Needed:*
 
-- Call 1
-- Call 2
-
+- https://canvas.instructure.com/doc/api/quiz_submissions.html#method.quizzes/quiz_submissions_api.index
+```
+GET /api/v1/courses/:course_id/quizzes/:quiz_id/submissions
+```
 *Explanation of Calls:*
 
-if needed
-
-*CSV Format:*
-
-Rows: Each row is a student that ...
-
-Columns:
-- Col 1:
-    - Col 1 comes from call 2 and does ...
-- Col 2:
-    - Col 2 comes from call 1 and does ...
+Returns an array of submissions, the submission contains 
+a attempt property which is the number of attempts
 
 ## Time spent on each Quiz
 
-##### Questions for Henrie
-- Q1
-- Q2
-
-*Why:* this is why we need this
+*Why:* If they would like to know how long the student spent on the test
 
 *Calls Needed:*
 
-- Call 1
-- Call 2
-
+- https://canvas.instructure.com/doc/api/quiz_submissions.html#method.quizzes/quiz_submissions_api.index
+```
+GET /api/v1/courses/:course_id/quizzes/:quiz_id/submissions
+```
 *Explanation of Calls:*
 
-if needed
-
-*CSV Format:*
-
-Rows: Each row is a student that ...
-
-Columns:
-- Col 1:
-    - Col 1 comes from call 2 and does ...
-- Col 2:
-    - Col 2 comes from call 1 and does ...
+Returns an array of submissions, the submission contains a 
+time_spent property which is the number of seconds the student spent
 
 ## Performance on each Question item
 
-##### Questions for Henrie
-- Q1
-- Q2
-
-*Why:* this is why we need this
+*Why:* Assuming they would like to see the student answers and scores for each question
 
 *Calls Needed:*
 
-- Call 1
-- Call 2
+- https://canvas.instructure.com/doc/api/quiz_submission_questions.html#method.quizzes/quiz_submission_questions.index
+```
+GET /api/v1/quiz_submissions/:quiz_submission_id/questions
+```
 
 *Explanation of Calls:*
 
-if needed
-
-*CSV Format:*
-
-Rows: Each row is a student that ...
-
-Columns:
-- Col 1:
-    - Col 1 comes from call 2 and does ...
-- Col 2:
-    - Col 2 comes from call 1 and does ...
+***Not a full match*** It claims to be able to return the student 
+answers, but returns something else, so wait until it works i guess
 
 ## Time spent on each Question item
 
-##### Questions for Henrie
-- Q1
-- Q2
+*Why:* For teachers to analyise the difficulty distribution among questions
 
-*Why:* this is why we need this
-
-*Calls Needed:*
-
-- Call 1
-- Call 2
-
-*Explanation of Calls:*
-
-if needed
-
-*CSV Format:*
-
-Rows: Each row is a student that ...
-
-Columns:
-- Col 1:
-    - Col 1 comes from call 2 and does ...
-- Col 2:
-    - Col 2 comes from call 1 and does ...
-
-
-
-
-
-
-
-
+*Result:* There is nothing to suggest that they are recording this data
 
 
 
