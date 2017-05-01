@@ -309,32 +309,35 @@ Columns:
 - Q1
 - Q2
 
-*Why:* this is why we need this
+*Why:* To provide students with specific feedback on how they can improve.
 
 *Calls Needed:*
 
-- Call 1
-- Call 2
+- PUT /api/v1/courses/:course_id/quizzes/:quiz_id/submissions/:id
+- https://canvas.instructure.com/doc/api/quiz_submissions.html#method.quizzes/quiz_submissions_api.update
 
 *Explanation of Calls:*
 
-if needed
+Within the 'questions' property of the PUT request object, there is a space for each question of the quiz
+you want to put a comment on/change grade of.  Here, you can change the comments and the grade for each question.  As stated in the URL: Type Hash.  The keys are the specific question IDs in the quiz, and the values are hashes of 'score' and 'comment' entries.
 
 *CSV Format:*
 
-Rows: Each row is a student that ...
+Rows: Each row is a student that has completed a quiz
 
 Columns:
 - Col 1:
-    - Col 1 comes from call 2 and does ...
+    - The Question ID to comment upon.
 - Col 2:
-    - Col 2 comes from call 1 and does ...
+    - The comment the reviewer desires to apply to the question.
+- Col 3:
+    - (IF DESIRED) The new grade the reviewer desires to apply to the question.
     
     
 ## Time stamp on when assessment was completed (ready for review)
 
 ##### Questions for Henrie
-- Q1
+- By assessment, do you mean quiz?
 - Q2
 
 *Why:* this is why we need this
