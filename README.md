@@ -354,22 +354,27 @@ Columns:
 
 *Calls Needed:*
 
-- Call 1
-- Call 2
+- /api/v1/courses/:course_id/assignments/:assignment_id/submissions/:user_id
+- https://canvas.instructure.com/doc/api/submissions.html#method.submissions_api.show
 
 *Explanation of Calls:*
 
-if needed
+This GET request returns a submission Object.  In the submission is a property named "grader_id" that has the user id of the grader who reviewed and assigned a grade to a submission.  
+
+** IMPORTANT **
+This object, the Submission Object also contains a property named "submission_comments" that has the ability to contain Submission Comment Objects that have *who* gave a comment on a submission (instructor feedback) and *when* the comment was made.  This may help with the first element in this subsection ^^.
 
 *CSV Format:*
 
-Rows: Each row is a student that ...
+Rows: Each row is a student that has submitted an assignment.
 
 Columns:
 - Col 1:
-    - Col 1 comes from call 2 and does ...
+    - user_id
 - Col 2:
-    - Col 2 comes from call 1 and does ...
+    - grader_id
+- Col 3:
+    - Grader's Name
 
 
 
