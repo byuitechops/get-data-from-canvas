@@ -382,27 +382,15 @@ Columns:
 
 ## Number of logins per day for each student
 
-##### Questions for Henrie
-- Q1
-- Q2
-
-*Why:* this is why we need this
+*Why:* Assuming that it is a simular reason to why they want number of page views per day
 
 *Calls Needed:*
 
-- Call 1
-- Call 2
+- https://canvas.instructure.com/doc/api/authentications_log.html#method.authentication_audit_api.for_user
+```
+GET /api/v1/audit/authentication/users/:user_id
+```
 
 *Explanation of Calls:*
 
-if needed
-
-*CSV Format:*
-
-Rows: Each row is a student that ...
-
-Columns:
-- Col 1:
-    - Col 1 comes from call 2 and does ...
-- Col 2:
-    - Col 2 comes from call 1 and does ...
+Under the events property is a list of all the times the user has logged in. Which includeds a time stamp, so the number of logins per day can be deduced.
