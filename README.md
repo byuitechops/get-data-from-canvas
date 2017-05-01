@@ -366,16 +366,19 @@ Columns:
     
 ## Time stamp on when assessment was opened for review 
 
+I haven't found an api yet that states that an assignment can have an "open" and "closed" time for review.  Instead, I've found that there are gradeChangeEvents Objects that have a time stamp on them for an event on which you changed a grade.
+
 ##### Questions for Henrie
-- Q1
+- Do we want the entire history of when assignments received grades?  Or, do we want only the most recent changes, such as a GradeChangeEvents Object?
 - Q2
 
 *Why:* this is why we need this
 
 *Calls Needed:*
 
-- Call 1
-- Call 2
+- (GradeChangeEvent - by assignment) GET /api/v1/audit/grade_change/assignments/:assignment_id
+- https://canvas.instructure.com/doc/api/grade_change_log.html#method.grade_change_audit_api.for_assignment
+- 
 
 *Explanation of Calls:*
 
