@@ -378,7 +378,7 @@ I haven't found an api yet that states that an assignment can have an "open" and
 
 - (GradeChangeEvent - by assignment) GET /api/v1/audit/grade_change/assignments/:assignment_id
 - https://canvas.instructure.com/doc/api/grade_change_log.html#method.grade_change_audit_api.for_assignment
-- 
+- (URL for Gradebook history) https://canvas.instructure.com/doc/api/gradebook_history.html
 
 *Explanation of Calls:*
 
