@@ -15,7 +15,7 @@ GET /api/v1/courses/:course_id/quizzes/:quiz_id/submissions
 
 ##### *Explanation of Calls:*
 
-Returns an array of submissions, the submission contains the attributes *score*, *attempt*,and *time_spent* 
+Returns an array of submissions.  The submission contains the attributes *score*, *attempt*,and *time_spent* 
 which can be used for Quiz Score, Number of Attempts, and Time Spent respectively
 
 *CSV Format:*
@@ -60,8 +60,8 @@ GET /api/v1/courses/:course_id/quizzes/:quiz_id/statistics
 
 *Explanation of Call:*
 
-Better for an overall evaluation of how students preformed on questions, which answer the majority of them used and such.
-But it also lists the names of the students who chose each answer, which could theoretically be used to see students scores,
+Better for an overall evaluation of how students preformed on questions, which answers the majority of them used and such.
+But it also lists the names of the students who chose each answer, which could theoretically be used to see students' scores
 on each question.
 
 ## Time spent on each Question item
@@ -124,12 +124,9 @@ Columns:
 - Col 2:
     - The comments that were retrieved for that user_id
 	
-|  | Assignment ID | Student | Grader | Comment | Timestamp |
-| - | - | - | - | - | - |
-| Submissions | | | | | | |
-    
-### Limitations
-- BETA API - PUT request
+|  | comments retrieved | 
+| - | - |
+| Student user_id | | | 
     
 ## Time stamp on when assessment was completed (ready for review)
 
@@ -141,11 +138,11 @@ Columns:
 
 *Calls Needed:*
 
-- [FOR ALL QUIZ SUBMISSIONS FOR THIS QUIZ](https://canvas.instructure.com/doc/api/quiz_submissions.html#method.quizzes/quiz_submissions_api.index)
+- [For all quiz submissions for a cetain quiz](https://canvas.instructure.com/doc/api/quiz_submissions.html#method.quizzes/quiz_submissions_api.index)
 ```
 GET /api/v1/courses/:course_id/quizzes/:quiz_id/submissions
 ``` 
-- [FOR THE SINGLE QUIZ SUBMSSION FOR A STUDENT ON THIS QUIZ](https://canvas.instructure.com/doc/api/quiz_submissions.html#method.quizzes/quiz_submissions_api.submission)
+- [For a single quiz submission of a user](https://canvas.instructure.com/doc/api/quiz_submissions.html#method.quizzes/quiz_submissions_api.submission)
 ```
 GET /api/v1/courses/:course_id/quizzes/:quiz_id/submission
 ```
@@ -162,7 +159,7 @@ These calls return in the case of the first a list of Quiz Submission objects, o
 
     
 ### Limitations
-- BETA API - both
+- BETA API - both calls
 
 ## Time stamp on when assessment was opened and completed/returned for review 
 
