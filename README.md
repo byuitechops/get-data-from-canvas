@@ -21,7 +21,7 @@ Returns an array of submissions, the submission contains the attributes `score`,
 
 ##### *CSV Format:*
 |  | Student | Score | Number of Attempts | Time Spent | Time Submitted
-| - | - | - | - | - |
+| - | - | - | - | - | - |
 | Quiz | | | | | | |
 
 ----
@@ -57,7 +57,7 @@ answers, but returns something else.
 
 ##### *CSV Format:*
 |  | Quiz | Question | Percent that chose this |
-| - | - | - |
+| - | - | - | - |
 | Answer | | | | |
 
 ---
@@ -191,16 +191,16 @@ documentation).
 - **BETA** API - Gradebook History
 
 ##### *CSV Format:*
-#####GradeChangeEvent Method
+###### GradeChangeEvent Method
 
 |  | Timestamp | Grade | 
 | - | - | - |
 | Assignment | | | |
 
-#####Gradebook History Method
+###### Gradebook History Method
 
 |  | Grader | Timestamp | Grade | 
-| - | - | - |
+| - | - | - | - |
 | Submissions | | | | |
 
     
@@ -239,7 +239,7 @@ who graded this version of the submission,"
 
 ##### *CSV Format:*
 |  | Grader | Assigment | Grade | Timestamp |
-| - | - | - | - |
+| - | - | - | - | - |
 | Changes | | | | | |
 
 ##### Limitations
