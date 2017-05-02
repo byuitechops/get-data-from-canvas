@@ -2,7 +2,7 @@
 
 ## *Quiz Stats*
 
-### Student Quiz Scores, Number of Attempts, and Time Spent
+### Student Quiz Scores, Number of Attempts, Time Spent, and Time Submitted
 
 ##### *Why:* 
 To collect data on how well students are doing on a given quiz
@@ -14,16 +14,15 @@ GET /api/v1/courses/:course_id/quizzes/:quiz_id/submissions
 ```
 
 ##### *Explanation of Calls:*
-Returns an array of submissions, the submission contains the attributes *score*, *attempt*,and *time_spent* 
-which can be used for Quiz Score, Number of Attempts, and Time Spent respectively
+Returns an array of submissions, the submission contains the attributes `score`, `attempt`, `time_spent`, and `finished_at` which can be used for Quiz Score, Number of Attempts, Time Spent, and Time Submitted respectively.
 
 ##### *Limitations:*
 - **BETA** API
 
 ##### *CSV Format:*
-|  | Student | Score | Number of Attempts | Time Spent |
+|  | Student | Score | Number of Attempts | Time Spent | Time Submitted
 | - | - | - | - | - |
-| Quiz | | | | | |
+| Quiz | | | | | | |
 
 ----
 
@@ -57,7 +56,7 @@ theoretically be used to see how a student scored on a single question.
 answers, but returns something else.
 
 ##### *CSV Format:*
-|  | Quiz | Question | percent that chose this |
+|  | Quiz | Question | Percent that chose this |
 | - | - | - |
 | Answer | | | | |
 
@@ -77,7 +76,7 @@ For teachers to analyze the difficulty distribution among questions
 
 
 
-### Timestamp, Time Spent, and Number of page views by a student on each LMS page
+### Number of page views, Timestamp, and Time Spent by a student on each LMS page
 
 ##### *Why:* 
 To see how often a student accessed a certain page in Canvas.
@@ -89,19 +88,12 @@ To see how often a student accessed a certain page in Canvas.
 GET /api/v1/users/:user_id/page_views
 ```
 
-- Additional Parameters:
--  start_time
--  end_time
-
 ##### *Explanation of Call:*
 
-This call will return a list of PageView objects. We will be using the *created_at*, *interation_seconds*,
-and *url* attributes to determine the Timestamp, timespent and number of view respectivley
+This call will return a list of Page Views. We will be using the `created_at`, `interation_seconds`,
+and `url` attributes to determine the Timestamp, time spent and number of view respectivley
 
 ##### *CSV Format:*
-
-- Following the link provided, it says that a CSV file should be downloadable. Otherwise there is this.
-
 |  | Student | URL | Number of Visits | Timestamp | Time Spent |
 | - | - | - | - | - | - |
 | Visit | | | | | | |
@@ -126,70 +118,21 @@ GET /api/v1/courses/:course_id/assignments/:assignment_id/submissions/:user_id?i
 ```
 
 ##### *Explanation of Call:*
-This GET request returns a submission Object.  In this Submission Object is found a property named `submission_comments`.  This property contains the comment, timestamp, and author
+This GET request returns a submission which contains `submission_comments`.  This attribute contains the comment, timestamp, and author
 
 ##### *Limitations:*
 - **BETA** API - PUT request
 
-##### *CSV Format:*
-
-Rows: Each row is a student that has completed a quiz
-GET:
-Columns:
-- Col 1:
-    - The user_id 
-- Col 2:
-    - The comments that were retrieved for that user_id
-	
+##### *CSV Format:*	
 |  | Assignment ID | Student | Grader | Comment | Timestamp |
 | - | - | - | - | - | - |
 | Submissions | | | | | | |
-    
-    
----
 
-### Time stamp on when assessment was completed (ready for review)
-
-##### *Questions for Henrie:*
-- By assessment, do you mean quiz?
-- Is this for all quizzes, or by each individual student?
-
-##### *Why:* 
-To know when each quiz was completed, so that reviewers can get the go ahead on when to review.  Also, so that teachers may know when a student submitted a quiz.
-
-##### *Calls Needed:*
-- [FOR ALL QUIZ SUBMISSIONS FOR THIS QUIZ](https://canvas.instructure.com/doc/api/quiz_submissions.html#method.quizzes/quiz_submissions_api.index)
-```
-GET /api/v1/courses/:course_id/quizzes/:quiz_id/submissions
-``` 
-- [FOR THE SINGLE QUIZ SUBMSSION FOR A STUDENT ON THIS QUIZ](https://canvas.instructure.com/doc/api/quiz_submissions.html#method.quizzes/quiz_submissions_api.submission)
-```
-GET /api/v1/courses/:course_id/quizzes/:quiz_id/submission
-```
-
-##### *Explanation of Calls:*
-These calls return in the case of the first a list of Quiz Submission objects, or in the case of the second,
-an individual Quiz Submission Object.  In this object is found the property "finished_at" that returns the
-value of when the quiz was finished and submitted in the following format: "2013-11-07T13:16:18Z".
-
-##### *Limitations:*
-- **BETA** API - both
-
-##### *CSV Format:*
-
-Rows: Each row is a student that has submitted a quiz
-
-Columns:
-- Col 1: 
-    - The user_id of the student.
-- Col 2:
-    - The finished_at timestamp.
-    
 
 
 ---
 
-### Time stamp on when assessment was opened and completed/returned for review 
+### Timestamp on when assessment was opened and completed/returned for review 
 
 ##### *Questions for Henrie:*
 - Do we want the entire history of when assignments received grades?  Or, do we want only the most recent 
@@ -207,26 +150,39 @@ GET /api/v1/audit/grade_change/assignments/:assignment_id
 ```
 - [URL for Gradebook history](https://canvas.instructure.com/doc/api/gradebook_history.html)
 ```
-GET /api/v1/courses/:course_id/gradebook_history/feed
+GET /api/v1/courses/:course_id/gradebook_history/:date/graders/:grader_id/assignments/:assignment_id/submissions
 ```
 
 ##### *Explanation of Calls:*
-I haven't found an api yet that states that an assignment can have an "open" and "closed" time for review.  
-Instead, I've found that there are gradeChangeEvents Objects that have a time stamp on them for an event on 
-which you changed a grade.
+Canvas dosen't track when grading has began and closed, but it does track when things have been graded.
+
+**GradeChangeEvents:**
+This object will contain a "created_at" property that is a timestamp of when the Grade was changed.  Within the
+"links" property, there is another object that has the "grader" property, which is the grader's user_id.
+
+**GradebookHistory:**
+This API call will return a list of SubmissionHistory Objects.  Each SubmissionHistory Object contains an array of
+SubmissionVersion Objects, which are the various graded versions of the Assignment.  In this object is found the 
+"grader" property, which is "the name of the user who graded this version of the submission," as well as 
+"graded_at" property, which is the "timestamp for the grading of this version of the submission."(API 
+documentation).
 
 ##### *Limitations:*
 - **BETA** API - Gradebook History
 
 ##### *CSV Format:*
+#####GradeChangeEvent Method
 
-Rows: The names of the graders that we are looking at.
+|  | Timestamp | Grade | 
+| - | - | - |
+| Assignment | | | |
 
-Columns:
-- Col 1: 
-    - grader_id.
-- Col 2:
-    - The value for "graded_at" property.
+#####Gradebook History Method
+
+|  | Grader | Timestamp | Grade | 
+| - | - | - |
+| Submissions | | | | |
+
     
 
 ---
@@ -238,25 +194,36 @@ So that we know who reviewed a student's work.
 
 ##### *Calls Needed:*
 
-- [Get a single submission](https://canvas.instructure.com/doc/api/submissions.html#method.submissions_api.show)
+**This will yield the grader's user_id and is more stable than Gradebook History:**
+- [List assignment submissions (Submission Object)](https://canvas.instructure.com/doc/api/submissions.html#method.submissions_api.index)
 ```
-GET /api/v1/courses/:course_id/assignments/:assignment_id/submissions/:user_id
+GET /api/v1/courses/:course_id/assignments/:assignment_id/submissions
+```
+
+**This will yield the grader's name and user_id, but is in BETA:**
+- [Lists Submissions (Gradebook History)](https://canvas.instructure.com/doc/api/gradebook_history.html#method.gradebook_history_api.submissions)
+```
+GET /api/v1/courses/:course_id/gradebook_history/:date/graders/:grader_id/assignments/:assignment_id/submissions
 ```
 
 ##### *Explanation of Call:*
 
-This GET request returns a submission Object.  In the submission is a property named "grader_id" that has the
-user id of the grader who reviewed and assigned a grade to a submission.  
+**Submission Object:**  This GET request returns a list of Submission Objects for a certain assignment_id.  In the 
+submission is a property named "grader_id" that has the user id of the grader who reviewed and assigned a grade to 
+a submission.  
+
+**Gradebook History:**  (Same as Gradebook History above) This API call will return a list of SubmissionHistory 
+Objects.  Each SubmissionHistory Object contains an array of SubmissionVersion Objects, which are the various 
+graded versions of the Assignment.  In this object is found the "grader" property, which is "the name of the user 
+who graded this version of the submission,"
 
 ##### *CSV Format:*
+|  | Grader | Assigment | Grade | Timestamp |
+| - | - | - | - |
+| Changes | | | | | |
 
-Rows: Submission_Id
-
-Columns:
-- Col 1: 
-    - grader_id.
-- Col 2:
-    - The Grader's Name.
+##### Limitations
+- BETA API - Gradebook History
 
 
 
@@ -277,17 +244,13 @@ GET /api/v1/audit/authentication/users/:user_id
 ```
 
 ##### *Explanation of Call:*
-Under the events property is a list of all the times the user has logged in. Which includeds a time stamp, 
+Under the events property is a list of all the times the user has logged in. Which includeds a timestamp, 
 so the number of logins per day can be deduced.
 
-The property named "created_at" is what we're looking for.  This will give us the time stamp.
+The property named "created_at" is what we're looking for.  This will give us the timestamp.
 
 ##### *CSV Format:*
 
-Rows: Student Names
-
-Columns:
-- Col 1:
-    - user_id of each student.
-- Col 2:
-    - Timestamp of when login occured.
+|  | Number of Logins | 
+| - | - |
+| Day | |
