@@ -156,13 +156,10 @@ These calls return in the case of the first a list of Quiz Submission objects, o
 
 *CSV Format:*
 
-Rows: Each row is a student that has submitted a quiz
+|  | student's user_id | finished_at timestamp | 
+| - | - | - |
+| Student Name | | | |
 
-Columns:
-- Col 1: 
-    - The user_id of the student.
-- Col 2:
-    - The finished_at timestamp.
     
 ### Limitations
 - BETA API - both
@@ -182,22 +179,32 @@ GET /api/v1/audit/grade_change/assignments/:assignment_id
 ```
 - [URL for Gradebook history](https://canvas.instructure.com/doc/api/gradebook_history.html)
 ```
-GET /api/v1/courses/:course_id/gradebook_history/feed
+GET /api/v1/courses/:course_id/gradebook_history/:date/graders/:grader_id/assignments/:assignment_id/submissions
 ```
 
 *Explanation of Calls:*
 
 I haven't found an api yet that states that an assignment can have an "open" and "closed" time for review.  Instead, I've found that there are gradeChangeEvents Objects that have a time stamp on them for an event on which you changed a grade.
 
+**GradeChangeEvents:**
+This object will contain a "created_at" property that is a time stamp of when the Grade was changed.  Within the "links" property, there is another object that has the "grader" property, which is the grader's user_id.
+
+**GradebookHistory:**
+This API call will return a list of SubmissionHistory Objects.  Each SubmissionHistory Object contains an array of SubmissionVersion Objects, which are the various graded versions of the Assignment.  In this object is found the "grader" property, which is "the name of the user who graded this version of the submission," as well as "graded_at" property, which is the "time stamp for the grading of this version of the submission."(API documentation).
+
 *CSV Format:*
+#####GradeChangeEvent Method
 
-Rows: The names of the graders that we are looking at.
+|  | "grader"(The grader's user_id) | The value for "created_at" property | 
+| - | - | - |
+| Grader Name | | | |
 
-Columns:
-- Col 1: 
-    - grader_id.
-- Col 2:
-    - The value for "graded_at" property.
+#####Gradebook History Method
+
+|  | "grader_id"(The grader's user_id) | The value for "graded_at" property | 
+| - | - | - |
+| Grader Name | | | |
+
     
 ### Limitations
 - BETA API - Gradebook History
@@ -209,24 +216,37 @@ Columns:
 
 *Calls Needed:*
 
-- [Get a single submission](https://canvas.instructure.com/doc/api/submissions.html#method.submissions_api.show)
+**This will yield the grader's user_id and is more stable than Gradebook History:**
+- [List assignment submissions(Submission Object)](https://canvas.instructure.com/doc/api/submissions.html#method.submissions_api.index)
 ```
-GET /api/v1/courses/:course_id/assignments/:assignment_id/submissions/:user_id
+GET /api/v1/courses/:course_id/assignments/:assignment_id/submissions
+```
+
+**This will yield the grader's name and user_id, but is in BETA:**
+- [Lists Submissions(Gradebook History)](https://canvas.instructure.com/doc/api/gradebook_history.html#method.gradebook_history_api.submissions)
+```
+GET /api/v1/courses/:course_id/gradebook_history/:date/graders/:grader_id/assignments/:assignment_id/submissions
 ```
 
 *Explanation of Calls:*
 
-This GET request returns a submission Object.  In the submission is a property named "grader_id" that has the user id of the grader who reviewed and assigned a grade to a submission.  
+**Submission Object:**  This GET request returns a list of Submission Objects for a certain assignment_id.  In the submission is a property named "grader_id" that has the user id of the grader who reviewed and assigned a grade to a submission.  
+
+**Gradebook History:**  (Same as Gradebook History above) This API call will return a list of SubmissionHistory Objects.  Each SubmissionHistory Object contains an array of SubmissionVersion Objects, which are the various graded versions of the Assignment.  In this object is found the "grader" property, which is "the name of the user who graded this version of the submission,"
 
 *CSV Format:*
 
-Rows: Submission_Id
+**Submission Object Method**
 
-Columns:
-- Col 1: 
-    - grader_id.
-- Col 2:
-    - The Grader's Name.
+|  | "grader_id" | 
+| - | - | - |
+| Student's user_id for a submission | | | 
+
+**Gradebook History Method**
+
+|  | The value of "grader" property | 
+| - | - | - |
+| Grader's user_id | | | 
 
 
 ## *Other*
