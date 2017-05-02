@@ -248,6 +248,9 @@ GET /api/v1/courses/:course_id/gradebook_history/:date/graders/:grader_id/assign
 | - | - | - |
 | Grader's user_id | | | 
 
+##### Limitations
+- BETA API - Gradebook History
+
 
 ## *Other*
 
@@ -270,10 +273,6 @@ The property named "created_at" is what we're looking for.  This will give us th
 
 *CSV Format:*
 
-Rows: Student Names
-
-Columns:
-- Col 1:
-    - user_id of each student.
-- Col 2:
-    - Timestamp of when login occured.
+|  | user_id | "created_at" timestamp | 
+| - | - | - |
+| Student Names | | | |
