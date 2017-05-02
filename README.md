@@ -62,6 +62,7 @@ answers, but returns something else.
 
 ---
 
+
 ### Time spent on each Question item
 
 ##### *Why:* 
@@ -128,7 +129,26 @@ This GET request returns a submission which contains `submission_comments`.  Thi
 | - | - | - | - | - | - |
 | Submissions | | | | | | |
 
+---
 
+### Time stamp on when assessment was completed (ready for review)
+
+##### Questions for Henrie
+- By assessment, do you mean quiz?
+- Is this for all quizzes, or by each individual student?
+
+*Why:* To know when each quiz was completed, so that reviewers can get the go ahead on when to review.  Also, so that teachers may know when a student submitted a quiz.
+
+*Calls Needed:*
+
+- [For all quiz submissions for a cetain quiz](https://canvas.instructure.com/doc/api/quiz_submissions.html#method.quizzes/quiz_submissions_api.index)
+```
+GET /api/v1/courses/:course_id/quizzes/:quiz_id/submissions
+``` 
+- [For a single quiz submission of a user](https://canvas.instructure.com/doc/api/quiz_submissions.html#method.quizzes/quiz_submissions_api.submission)
+```
+GET /api/v1/courses/:course_id/quizzes/:quiz_id/submission
+```
 
 ---
 
