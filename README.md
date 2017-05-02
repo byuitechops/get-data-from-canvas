@@ -1,32 +1,28 @@
-# Get Data From Canvas
-
-This repo is how we will get the data we need for analysis. 
-
-# Needs
+# What we need from Canvas
 
 ## *Quiz Stats*
 
-## Student Quiz Scores, Number of Attempts, and Time Spent
+### Student Quiz Scores, Number of Attempts, and Time Spent
 
-*Why:* Assuming to see the results of all the students who have take the quiz
+*Why:* To collect data on how well students are doing on a given quiz
 
-*Calls Needed:*
+##### *Calls Needed:*
 
 - [Get all quiz submissions](https://canvas.instructure.com/doc/api/quiz_submissions.html#method.quizzes/quiz_submissions_api.index)
 ```
 GET /api/v1/courses/:course_id/quizzes/:quiz_id/submissions
 ```
 
-*Explanation of Calls:*
+##### *Explanation of Calls:*
 
 Returns an array of submissions, the submission contains the attributes *score*, *attempt*,and *time_spent* 
 which can be used for Quiz Score, Number of Attempts, and Time Spent respectively
 
 *CSV Format:*
 
-| Quiz | Score | Number of Attempts | Time Spent |
+|  | Score | Number of Attempts | Time Spent |
 | - | - | - | - |
-| | | | | |
+| Quiz | | | | |
 
 ## Performance on each Question item
 
@@ -34,7 +30,7 @@ which can be used for Quiz Score, Number of Attempts, and Time Spent respectivel
 
 *Calls Needed:*
 
-- https://canvas.instructure.com/doc/api/quiz_submission_questions.html#method.quizzes/quiz_submission_questions.index
+- [Get all quiz submission questions](https://canvas.instructure.com/doc/api/quiz_submission_questions.html#method.quizzes/quiz_submission_questions.index)
 ```
 GET /api/v1/quiz_submissions/:quiz_submission_id/questions
 ```
@@ -43,6 +39,23 @@ GET /api/v1/quiz_submissions/:quiz_submission_id/questions
 
 ***Not a full match*** It claims to be able to return the student 
 answers, but returns something else, It is still in beta so wait until it works I guess
+
+----- 
+
+OR 
+
+-----
+
+- [Fetching the latest quiz statistics](https://canvas.instructure.com/doc/api/quiz_statistics.html#method.quizzes/quiz_statistics.index)
+```
+GET /api/v1/courses/:course_id/quizzes/:quiz_id/statistics
+```
+
+*Explanation of Call:*
+
+Better for an overall evaluation of how students preformed on questions, which answer the majority of them used and such.
+But it also lists the names of the students who chose each answer, which could theoretically be used to see students scores,
+on each question.
 
 ## Time spent on each Question item
 
@@ -75,15 +88,15 @@ This call will return a list of PageView objects. We will be using the *created_
 
 - Following the link provided, it says that a CSV file should be downloadable. Otherwise there is this.
 
-| Visit | Student | URL | Number of Visits | Timestamp | Time Spent |
+|  | Student | URL | Number of Visits | Timestamp | Time Spent |
 | - | - | - | - | - | - |
-| | | | | | | |
+| Visit | | | | | | |
 
 ## *Review Stats*
 
 ## Reviewer feedback (text sent to students about their performance)
 
-*Why:* To get comments that a teachers have provided to 
+*Why:* To get comments that a teachers has provided 
 
 *Calls Needed:*
 - [Get a single submission](https://canvas.instructure.com/doc/api/submissions.html#method.submissions_api.show)
@@ -91,16 +104,8 @@ This call will return a list of PageView objects. We will be using the *created_
 GET /api/v1/courses/:course_id/assignments/:assignment_id/submissions/:user_id?include[]=submission_comments
 ```
 
-- [Update student question scores and comments](https://canvas.instructure.com/doc/api/quiz_submissions.html#method.quizzes/quiz_submissions_api.update)
-```
-PUT /api/v1/courses/:course_id/quizzes/:quiz_id/submissions/:id
-``` 
-
 *Explanation of Calls:*
-This GET request returns a submission Object.  In this Submission Object is found a property named "submission_comments".  This property has the ability to store comment objects that have a time stamp and who gave a comment.
-
-Within the 'questions' property of the PUT request object, there is a space for each question of the quiz
-you want to put a comment on/change grade of.  Here, you can change the comments and the grade for each question.  As stated in the URL: Type Hash.  The keys are the specific question IDs in the quiz, and the values are hashes of 'score' and 'comment' entries.
+This GET request returns a submission Object.  In this Submission Object is found a property named `submission_comments`.  This property contains the comment, timestamp, and author
 
 *CSV Format:*
 
@@ -111,15 +116,10 @@ Columns:
     - The user_id 
 - Col 2:
     - The comments that were retrieved for that user_id
-
-PUT:
-Columns:
-- Col 1:
-    - The Question ID to comment upon.
-- Col 2:
-    - The comment the reviewer desires to apply to the question.
-- Col 3:
-    - (IF DESIRED) The new grade the reviewer desires to apply to the question.
+	
+|  | Assignment ID | Student | Grader | Comment | Timestamp |
+| - | - | - | - | - | - |
+| Submissions | | | | | | |
     
     
 ## Time stamp on when assessment was completed (ready for review)
