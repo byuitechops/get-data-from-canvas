@@ -24,6 +24,10 @@ which can be used for Quiz Score, Number of Attempts, and Time Spent respectivel
 | - | - | - | - |
 | Quiz | | | | |
 
+
+### Limitations
+- BETA API
+
 ## Performance on each Question item
 
 *Why:* Assuming they would like to see the student answers and scores for each question
@@ -37,7 +41,10 @@ GET /api/v1/quiz_submissions/:quiz_submission_id/questions
 
 *Explanation of Calls:*
 
-***Not a full match*** It claims to be able to return the student 
+### Limitations
+- BETA API
+
+- ***Not a full match*** It claims to be able to return the student 
 answers, but returns something else, It is still in beta so wait until it works I guess
 
 ----- 
@@ -121,6 +128,8 @@ Columns:
 | - | - | - | - | - | - |
 | Submissions | | | | | | |
     
+### Limitations
+- BETA API - PUT request
     
 ## Time stamp on when assessment was completed (ready for review)
 
@@ -136,7 +145,7 @@ Columns:
 ```
 GET /api/v1/courses/:course_id/quizzes/:quiz_id/submissions
 ``` 
-- [FOR THE QUIZ SUBMSSION FOR A STUDENT ON THIS QUIZ](https://canvas.instructure.com/doc/api/quiz_submissions.html#method.quizzes/quiz_submissions_api.submission)
+- [FOR THE SINGLE QUIZ SUBMSSION FOR A STUDENT ON THIS QUIZ](https://canvas.instructure.com/doc/api/quiz_submissions.html#method.quizzes/quiz_submissions_api.submission)
 ```
 GET /api/v1/courses/:course_id/quizzes/:quiz_id/submission
 ```
@@ -155,7 +164,9 @@ Columns:
 - Col 2:
     - The finished_at timestamp.
     
-    
+### Limitations
+- BETA API - both
+
 ## Time stamp on when assessment was opened and completed/returned for review 
 
 ##### Questions for Henrie
@@ -188,9 +199,13 @@ Columns:
 - Col 2:
     - The value for "graded_at" property.
     
+### Limitations
+- BETA API - Gradebook History
+
+    
 ## Who reviewed an assessment submission
 
-*Why:* this is why we need this
+*Why:* So that we know who reviewed a student's work.
 
 *Calls Needed:*
 
@@ -198,7 +213,6 @@ Columns:
 ```
 GET /api/v1/courses/:course_id/assignments/:assignment_id/submissions/:user_id
 ```
-
 
 *Explanation of Calls:*
 
@@ -231,3 +245,15 @@ GET /api/v1/audit/authentication/users/:user_id
 *Explanation of Calls:*
 
 Under the events property is a list of all the times the user has logged in. Which includeds a time stamp, so the number of logins per day can be deduced.
+
+The property named "created_at" is what we're looking for.  This will give us the time stamp.
+
+*CSV Format:*
+
+Rows: Student Names
+
+Columns:
+- Col 1:
+    - user_id of each student.
+- Col 2:
+    - Timestamp of when login occured.
