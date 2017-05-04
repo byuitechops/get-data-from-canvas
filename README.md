@@ -91,6 +91,8 @@ GET /api/v1/users/:user_id/page_views
 
 ##### *Explanation of Call:*
 
+*Requires Admin Priveliges*
+
 This call will return a list of Page Views. We will be using the `created_at`, `interation_seconds`,
 and `url` attributes to determine the Timestamp, time spent and number of view respectively
 
