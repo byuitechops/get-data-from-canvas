@@ -41,12 +41,11 @@ GET /api/v1/quiz_submissions/:quiz_submission_id/questions
 GET /api/v1/courses/:course_id/quizzes/:quiz_id/statistics
 ```
 
-
 ##### *Explanation of Calls:*
-
 The first claims to return the answer the student chose, though it does not. So if that eventually works then great.
 
-The second is better for an evaluation of how all the students preformed on a single question, which answer the majority of them chose and such. But it also lists the names of the students who chose each answer, which could 
+The second is better for an evaluation of how all the students preformed on a single question,
+which answer the majority of them chose and such. But it also lists the names of the students who chose each answer, which could 
 theoretically be used to see how a student scored on a single question.
 
 ##### *Limitations:*
@@ -73,6 +72,7 @@ For teachers to analyze the difficulty distribution among questions
 
 
 
+
 ## *Content Stats*
 
 
@@ -92,7 +92,7 @@ GET /api/v1/users/:user_id/page_views
 ##### *Explanation of Call:*
 
 This call will return a list of Page Views. We will be using the `created_at`, `interation_seconds`,
-and `url` attributes to determine the Timestamp, time spent and number of view respectivley
+and `url` attributes to determine the Timestamp, time spent and number of view respectively
 
 ##### *CSV Format:*
 |  | Student | URL | Number of Visits | Timestamp | Time Spent |
@@ -110,7 +110,7 @@ and `url` attributes to determine the Timestamp, time spent and number of view r
 ### Reviewer feedback (text sent to students about their performance)
 
 ##### *Why:* 
-To get comments that a teachers has provided 
+To get comments that teachers have provided to the students
 
 ##### *Calls Needed:*
 - [Get a single submission](https://canvas.instructure.com/doc/api/submissions.html#method.submissions_api.show)
@@ -122,7 +122,7 @@ GET /api/v1/courses/:course_id/assignments/:assignment_id/submissions/:user_id?i
 This GET request returns a submission which contains `submission_comments`.  This attribute contains the comment, timestamp, and author
 
 ##### *Limitations:*
-- **BETA** API - PUT request
+- **BETA** API
 
 ##### *CSV Format:*	
 |  | Assignment ID | Student | Grader | Comment | Timestamp |
@@ -131,36 +131,14 @@ This GET request returns a submission which contains `submission_comments`.  Thi
 
 ---
 
-### Time stamp on when assessment was completed (ready for review)
-
-##### Questions for Henrie
-- By assessment, do you mean quiz?
-- Is this for all quizzes, or by each individual student?
-
-*Why:* To know when each quiz was completed, so that reviewers can get the go ahead on when to review.  Also, so that teachers may know when a student submitted a quiz.
-
-*Calls Needed:*
-
-- [For all quiz submissions for a cetain quiz](https://canvas.instructure.com/doc/api/quiz_submissions.html#method.quizzes/quiz_submissions_api.index)
-```
-GET /api/v1/courses/:course_id/quizzes/:quiz_id/submissions
-``` 
-- [For a single quiz submission of a user](https://canvas.instructure.com/doc/api/quiz_submissions.html#method.quizzes/quiz_submissions_api.submission)
-```
-GET /api/v1/courses/:course_id/quizzes/:quiz_id/submission
-```
-
----
-
 ### Timestamp on when assessment was opened and completed/returned for review 
 
 ##### *Questions for Henrie:*
 - Do we want the entire history of when assignments received grades?  Or, do we want only the most recent 
-changes, such as a GradeChangeEvents Object?
+change?
 
 ##### *Why:* 
-The reason why we would need this is to know when a reviewer started to review an assignment.  
-This would help in knowing the productivity of reviewers and lenghyness of assignments.
+To know how long it took to grade the assignments
 
 ##### *Calls Needed:*
 
@@ -168,82 +146,28 @@ This would help in knowing the productivity of reviewers and lenghyness of assig
 ```
 GET /api/v1/audit/grade_change/assignments/:assignment_id
 ```
-- [URL for Gradebook history](https://canvas.instructure.com/doc/api/gradebook_history.html)
+- [List assignment submissions (Submission Object)](https://canvas.instructure.com/doc/api/submissions.html#method.submissions_api.index)
+```
+GET /api/v1/courses/:course_id/assignments/:assignment_id/submissions
+```
+- [URL for Gradebook history](https://canvas.instructure.com/doc/api/gradebook_history.html#method.gradebook_history_api.submissions)
 ```
 GET /api/v1/courses/:course_id/gradebook_history/:date/graders/:grader_id/assignments/:assignment_id/submissions
 ```
 
 ##### *Explanation of Calls:*
-Canvas dosen't track when grading has began and closed, but it does track when things have been graded.
 
-**GradeChangeEvents:**
-This object will contain a "created_at" property that is a timestamp of when the Grade was changed.  Within the
-"links" property, there is another object that has the "grader" property, which is the grader's user_id.
-
-**GradebookHistory:**
-This API call will return a list of SubmissionHistory Objects.  Each SubmissionHistory Object contains an array of
-SubmissionVersion Objects, which are the various graded versions of the Assignment.  In this object is found the 
-"grader" property, which is "the name of the user who graded this version of the submission," as well as 
-"graded_at" property, which is the "timestamp for the grading of this version of the submission."(API 
-documentation).
+Returns a list of grading events, which contains information about grader, timestamp, and grade
 
 ##### *Limitations:*
+- Canvas doesn't track when grading has begun and closed, but it does track when things have been graded.
 - **BETA** API - Gradebook History
 
 ##### *CSV Format:*
-###### GradeChangeEvent Method
-
-|  | Timestamp | Grade | 
-| - | - | - |
-| Assignment | | | |
-
-###### Gradebook History Method
 
 |  | Grader | Timestamp | Grade | 
 | - | - | - | - |
 | Submissions | | | | |
-
-    
-
----
-    
-### Who reviewed an assessment submission
-
-##### *Why:* 
-So that we know who reviewed a student's work.
-
-##### *Calls Needed:*
-
-**This will yield the grader's user_id and is more stable than Gradebook History:**
-- [List assignment submissions (Submission Object)](https://canvas.instructure.com/doc/api/submissions.html#method.submissions_api.index)
-```
-GET /api/v1/courses/:course_id/assignments/:assignment_id/submissions
-```
-
-**This will yield the grader's name and user_id, but is in BETA:**
-- [Lists Submissions (Gradebook History)](https://canvas.instructure.com/doc/api/gradebook_history.html#method.gradebook_history_api.submissions)
-```
-GET /api/v1/courses/:course_id/gradebook_history/:date/graders/:grader_id/assignments/:assignment_id/submissions
-```
-
-##### *Explanation of Call:*
-
-**Submission Object:**  This GET request returns a list of Submission Objects for a certain assignment_id.  In the 
-submission is a property named "grader_id" that has the user id of the grader who reviewed and assigned a grade to 
-a submission.  
-
-**Gradebook History:**  (Same as Gradebook History above) This API call will return a list of SubmissionHistory 
-Objects.  Each SubmissionHistory Object contains an array of SubmissionVersion Objects, which are the various 
-graded versions of the Assignment.  In this object is found the "grader" property, which is "the name of the user 
-who graded this version of the submission,"
-
-##### *CSV Format:*
-|  | Grader | Assigment | Grade | Timestamp |
-| - | - | - | - | - |
-| Changes | | | | | |
-
-##### Limitations
-- BETA API - Gradebook History
 
 
 
