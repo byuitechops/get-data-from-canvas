@@ -152,24 +152,27 @@ GET /api/v1/audit/grade_change/assignments/:assignment_id
 ```
 GET /api/v1/courses/:course_id/assignments/:assignment_id/submissions
 ```
-- [URL for Gradebook history](https://canvas.instructure.com/doc/api/gradebook_history.html#method.gradebook_history_api.submissions)
+- [Gradebook history](https://canvas.instructure.com/doc/api/gradebook_history.html#method.gradebook_history_api.feed)
 ```
-GET /api/v1/courses/:course_id/gradebook_history/:date/graders/:grader_id/assignments/:assignment_id/submissions
+GET /api/v1/courses/:course_id/gradebook_history/feed
 ```
 
 ##### *Explanation of Calls:*
 
-Returns a list of grading events, which contains information about grader, timestamp, and grade
+Returns a list of grading events, which contains information about grader, timestamp, and grade.
+
+After investigating, the Gradebook History method is the best method if you don't have admin privileges.
 
 ##### *Limitations:*
 - Canvas doesn't track when grading has begun and closed, but it does track when things have been graded.
 - **BETA** API - Gradebook History
+- **Requires Admin Priveliges** - GradeChangeEvent
 
 ##### *CSV Format:*
 
-|  | Grader | Timestamp | Grade | 
+|  | Student_id | Grader_id | Grader_Name | Timestamp Submitted | Timestamp Graded | 
 | - | - | - | - |
-| Submissions | | | | |
+| Student | | | | | | |
 
 
 
