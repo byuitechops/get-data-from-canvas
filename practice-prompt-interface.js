@@ -92,3 +92,6 @@ function saveSettings(exampleSettings) {
   var jsonResponse = JSON.stringify(response);
   fs.writeFileSync('settingsChanges.txt', jsonResponse)
 }
+
+// Run Main
+main();
