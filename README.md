@@ -163,6 +163,8 @@ Returns a list of grading events, which contains information about grader, times
 
 After investigating, the Gradebook History method is the best method if you don't have admin privileges.
 
+**[X]Program Written**
+
 ##### *Limitations:*
 - Canvas doesn't track when grading has begun and closed, but it does track when things have been graded.
 - **BETA** API - Gradebook History
@@ -197,6 +199,8 @@ Under the events property is a list of all the times the user has logged in. Whi
 so the number of logins per day can be deduced.
 
 The property named "created_at" is what we're looking for.  This will give us the timestamp.
+
+**[X]Program Written**
 
 ##### *CSV Format:*
 

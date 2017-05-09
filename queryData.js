@@ -6,6 +6,7 @@
  * long it takes for a grader to grade an assignment.  Then,
  * the program generates a .csv file with the data received.
  *
+ * 
  *************************************************************/
 
 
@@ -13,15 +14,17 @@
 var request = require('request'); // For various https requests
 var fs = require('fs'); // For fs file-system module
 var dsv = require('d3-dsv'); // For d3-dsv csv conversion node
+var qs = require('qs');
 
 
-// Get the query type (e.g. 'page-views' or 'review-time').
+// Get the query type (e.g. 'page-views', 'review-time' or 'logins').
 var queryType = process.argv[2];
 
 var requestUrl = generateUrl(queryType);
 
 // Perform the GET request and generate CSV file
-request.get(url, function (error, response, body) {
+request.get(requestUrl, function (error, response, body) {
+  //console.log(body);
   var arrayOfObjects = saveBodyElements(body, queryType);
   convertArrayToCsv(arrayOfObjects, queryType);
 });
@@ -38,19 +41,34 @@ request.get(url, function (error, response, body) {
  */
 function generateUrl(queryType) {
   // Based on the queryType, generate the appropriate URL
+  var url = '';
   switch (queryType) {
     case 'page-views':
       var user_id = process.argv[3];
-      var url = 'https://byui.instructure.com/api/v1/users/' + user_id + '/page_views';
-      
+      url = 'https://byui.instructure.com/api/v1/users/' + user_id + '/page_views';
+
       break;
     case 'review-time':
       var course_id = process.argv[3];
-      var url = 'https://byui.instructure.com/api/v1/courses/' + course_id + '/gradebook_history/feed';
-      
+      url = 'https://byui.instructure.com/api/v1/courses/' + course_id + '/gradebook_history/feed';
+
+
+      // FOR COMMENTS: url = 'https://byui.instructure.com/api/v1/courses/15/assignments/144/submissions/';
+
       break;
+    case 'logins':
+      var user_id = process.argv[3];
+      url = 'https://byui.instructure.com/api/v1/audit/authentication/users/' + user_id;
+
+      break;
+    case 'comments':
+      var parametersString = process.argv[3];
+      //console.log(parametersString);
+      var parametersObject = qs.parse(parametersString);
+      //console.log(parametersObject);
+      url = 'https://byui.instructure.com/api/v1/courses/' + parametersObject.course_id + '/assignments/' + parametersObject.assignment_id + '/submissions/';
   }
-  
+
   var accessToken = process.argv[4];
 
   // If there are parameters, get the parameters.
@@ -60,7 +78,7 @@ function generateUrl(queryType) {
       url += process.argv[i];
       url += '&';
     }
-  } 
+  }
   // Else, simply tack on what is needed to finish the URL.
   else {
     url += '?&'
@@ -69,8 +87,9 @@ function generateUrl(queryType) {
   url += 'access_token=';
   url += accessToken;
 
+  //console.log(accessToken);
   console.log('request URL: ' + url);
-  
+
   return url;
 }
 
@@ -88,36 +107,83 @@ function generateUrl(queryType) {
 function saveBodyElements(body, queryType) {
   var arrayOfObjects = [];
 
+  //console.log(body);
   var parsedBody = JSON.parse(body);
-  if (queryType === 'page-views') {
-    parsedBody.forEach(function (pageViewObject) {
-      var newPageView = {
-        student_id: pageViewObject.url,
-        url: pageViewObject.interaction_seconds,
-        timestampAccess: pageViewObject.created_at,
-        timeSpent: pageViewObject.links.user
-      };
 
-      arrayOfObjects.push(newPageView);
-    });
-  } else {
-    //console.log(parsedBody);
-    parsedBody.forEach(function (submissionVersion) {
-      var newSubmissionTime = {
-        student_id: submissionVersion.user_id,
-        student_name: submissionVersion.user_name,
-        grader_id: submissionVersion.grader_id,
-        grader_name: submissionVersion.grader,
-        time_submitted: submissionVersion.submitted_at,
-        time_graded: submissionVersion.graded_at
-      };
+  switch (queryType) {
+    case 'page-views':
+      parsedBody.forEach(function (pageViewObject) {
+        var newPageView = {
+          student_id: pageViewObject.url,
+          url: pageViewObject.interaction_seconds,
+          timestampAccess: pageViewObject.created_at,
+          timeSpent: pageViewObject.links.user
+        };
 
-      //console.log(newSubmissionTime);
+        arrayOfObjects.push(newPageView);
+      });
+      break;
 
-      arrayOfObjects.push(newSubmissionTime);
-    });
+    case 'review-time':
+      //console.log(parsedBody);
+      parsedBody.forEach(function (submissionVersion) {
+        var newSubmissionTime = {
+          student_id: submissionVersion.user_id,
+          student_name: submissionVersion.user_name,
+          grader_id: submissionVersion.grader_id,
+          grader_name: submissionVersion.grader,
+          time_submitted: submissionVersion.submitted_at,
+          time_graded: submissionVersion.graded_at
+        };
+
+        //console.log(newSubmissionTime);
+
+        arrayOfObjects.push(newSubmissionTime);
+      });
+      break;
+
+    case 'logins':
+      var newStudentLoginCount = {
+        student_id: parsedBody.events[0].links.user,
+        logins: 0
+      }
+      parsedBody.events.forEach(function (event) {
+        // First, check to see if it is a login event
+        if (event.event_type === 'login') {
+          // Because we know that all these events are for
+          //  the same user, we now know that the event
+          //  we are on is a valid login event.
+          newStudentLoginCount.logins++;
+        }
+      });
+
+      arrayOfObjects.push(newStudentLoginCount);
+
+      break;
+    case 'comments':
+      console.log(parsedBody);
+      parsedBody.forEach(function (submission) {
+        submission.submission_comments.forEach(function (commentObject) {
+          var newSubmissionComment = {
+            student_id: submission.user_id,
+            comments: commentObject.comment,
+            time_commented: commentObject.created_at,
+            commenter: commentObject.author.display_name
+          }
+
+          console.log(newSubmissionComment);
+          arrayOfObjects.push(newSubmissionComment);
+        });
+
+        /*submission.submission_comments.forEach(function (commentObject) {
+          arrayOfComments.push(commentObject.comment);
+        });*/
+      });
+
+      break;
   }
-
+  
+  //console.log(arrayOfObjects);
   return arrayOfObjects;
 }
 
@@ -131,20 +197,38 @@ function saveBodyElements(body, queryType) {
  * @author Scott Nicholes                               
  */
 function convertArrayToCsv(arrayOfObjects, queryType) {
-  if (queryType === 'page-views') {
-    var pageViewsCsv = dsv.csvFormat(arrayOfObjects, ["Student_ID", "URL", "Date/Time Accessed", "Time Spent on Page"]);
+  switch (queryType) {
+    case 'page-views':
+      var pageViewsCsv = dsv.csvFormat(arrayOfObjects, ["Student_ID", "URL", "Date/Time Accessed", "Time Spent on Page"]);
 
-    fs.writeFileSync('pageViewsByInstance.csv', pageViewsCsv);
+      fs.writeFileSync('pageViewsByInstance.csv', pageViewsCsv);
 
-    return;
-  } else {
-    console.log(arrayOfObjects);
-    var gradedTimeCsv = dsv.csvFormat(arrayOfObjects) //, ["Student_ID", "Grader_ID", "Grader_Name", "Timestamp_Submitted", "Timestamp_Graded"]);
+      break;
+    case 'review-time':
+      var gradedTimeCsv = dsv.csvFormat(arrayOfObjects) //, ["Student_ID", "Grader_ID", "Grader_Name", "Timestamp_Submitted", "Timestamp_Graded"]);
 
-    console.log(gradedTimeCsv);
 
-    fs.writeFileSync('gradedTimesByStudent.csv', gradedTimeCsv);
+      var parsedAssignmentId = process.argv[5].replace('assignment_id=', '');
+      fs.writeFileSync('gradedTimesByStudentForAssignment' + parsedAssignmentId + '.csv', gradedTimeCsv);
 
-    return;
+      break;
+    case 'logins':
+      var loginsCsv = dsv.csvFormat(arrayOfObjects);
+
+      // Parse out the startTime for title of file
+      var parsedStartTime = process.argv[5].replace('start_time=', '');
+      fs.writeFileSync('studentLoginsFor' + parsedStartTime + '.csv', loginsCsv);
+
+      break;
+    case 'comments':
+      //console.log(arrayOfObjects);
+      var commentsCsv = dsv.csvFormat(arrayOfObjects);
+
+      var parametersString = process.argv[3];
+      var parametersObject = qs.parse(parametersString);
+
+      fs.writeFileSync('CommentsForAssignment' + parametersObject.assignment_id + '.csv', commentsCsv);
+
+      break;
   }
 }

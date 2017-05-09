@@ -1,0 +1,19 @@
+{
+  "properties": {
+    "requestUrl": {
+      "description": "Enter GET request URL ",
+      "type": "string",
+      "default": "https://byui.instructure.com/"
+    },
+    "sendHappy": {
+      "description": "Send a happy sticker with request?(true/false)",
+      "type": "boolean",
+      "default": false
+    },
+    "requestToken": {
+      "description": "Enter request token here",
+      "type": "string",
+      "default": "jfdkal;fjdkasl;fjfkasdl;"
+    }
+  }
+}
