@@ -5,7 +5,7 @@
       "type": "string",
       "default": "https://byui.instructure.com/"
     },
-    "sendHappy": {
+    "course_id": {
       "description": "Send a happy sticker with request?(true/false)",
       "type": "boolean",
       "default": false
@@ -14,6 +14,11 @@
       "description": "Enter request token here",
       "type": "string",
       "default": "jfdkal;fjdkasl;fjfkasdl;"
+    },
+    "assignment_id": {
+      "description": "Enter assignment_id",
+      "type": "integer",
+      "default": 0000
     }
   }
 }

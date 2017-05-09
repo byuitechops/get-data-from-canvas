@@ -24,9 +24,11 @@ var requestUrl = generateUrl(queryType);
 
 // Perform the GET request and generate CSV file
 request.get(requestUrl, function (error, response, body) {
-  //console.log(body);
-  var arrayOfObjects = saveBodyElements(body, queryType);
-  convertArrayToCsv(arrayOfObjects, queryType);
+  var displayBody = JSON.parse(body);
+  
+  console.log(displayBody);
+  /*var arrayOfObjects = saveBodyElements(body, queryType);
+  convertArrayToCsv(arrayOfObjects, queryType);*/
 });
 
 
@@ -73,8 +75,8 @@ function generateUrl(queryType) {
 
   // If there are parameters, get the parameters.
   if (process.argv.length > 5) {
+    url += '?';
     for (var i = 5; i < process.argv.length; i++) {
-      url += '?';
       url += process.argv[i];
       url += '&';
     }
@@ -208,8 +210,8 @@ function convertArrayToCsv(arrayOfObjects, queryType) {
       var gradedTimeCsv = dsv.csvFormat(arrayOfObjects) //, ["Student_ID", "Grader_ID", "Grader_Name", "Timestamp_Submitted", "Timestamp_Graded"]);
 
 
-      var parsedAssignmentId = process.argv[5].replace('assignment_id=', '');
-      fs.writeFileSync('gradedTimesByStudentForAssignment' + parsedAssignmentId + '.csv', gradedTimeCsv);
+      //var parsedAssignmentId = process.argv[5].replace('assignment_id=', '');
+      fs.writeFileSync('gradedTimesByStudentForAssignmentTest.csv', gradedTimeCsv);
 
       break;
     case 'logins':
