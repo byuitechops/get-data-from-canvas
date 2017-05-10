@@ -1,22 +1,17 @@
 {
   "properties": {
     "requestUrl": {
-      "description": "Enter GET request URL",
+      "description": "Enter Domain name(Example: byui)",
       "type": "string",
-      "default": "http://byui.instructure.com/"
+      "default": "byui"
     },
     "course_id": {
       "description": "Enter Course_Id",
       "type": "string",
       "default": "15"
     },
-    "assignment_id": {
-      "description": "Enter Assignment_Id",
-      "type": "string",
-      "default": "143"
-    },
     "requestToken": {
-      "description": "Enter request token here",
+      "description": "Enter request token",
       "type": "string",
       "default": "0"
     }

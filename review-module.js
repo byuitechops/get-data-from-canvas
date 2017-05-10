@@ -35,7 +35,7 @@ function main(settings) {
   request.get(requestUrl, function (error, response, body) {
     //console.log(body);
     var arrayOfSubmissions = saveSubmissions(body);
-    convertArrayToCsv(arrayOfSubmissions, settings);
+    convertArrayToCsv(arrayOfSubmissions);
     
     console.log('');
     console.log('Program ended successfully');
@@ -57,7 +57,7 @@ function generateUrl(settings) {
 //  console.log('assignment_id: ' + settings.properties.assignment_id.default);
   
   // Core URL to get a Submission Object
-  var url = 'https://byui.instructure.com/api/v1/courses/' + settings.properties.course_id.default + '/assignments/' + settings.properties.assignment_id.default + '/submissions/?include[]=user&include[]=submission_comments&access_token=';
+  var url = 'https://byui.instructure.com/api/v1/courses/' + settings.properties.course_id.default + '/students/submissions/?student_ids[]=all&include[]=user&include[]=submission_comments&include[]=assignment&access_token=';
   
   url += settings.properties.requestToken.default;
   
@@ -78,12 +78,16 @@ function saveSubmissions(body) {
 
   //console.log(body);
   var parsedBody = JSON.parse(body);
+  
+  //console.log(parsedBody);
 
   parsedBody.forEach(function (submission) {
     submission.submission_comments.forEach(function (commentObject) {
       var newSubmissionComment = {
         student_id: submission.user.id,
         student_name: submission.user.name,
+        assignment_id: submission.assignment.id,
+        assignment_name: submission.assignment.name,
         grader_id: submission.grader_id,
         time_submitted: submission.submitted_at,
         time_graded: submission.graded_at,
@@ -106,10 +110,10 @@ function saveSubmissions(body) {
  * @param {Array}    arrayOfSubmissions The data to be written to CSV
  * @param {Settings} settings           The settings that have information for the filename
  */
-function convertArrayToCsv(arrayOfSubmissions, settings) {
+function convertArrayToCsv(arrayOfSubmissions) {
   // Format the data into CSV
   var commentsCsv = dsv.csvFormat(arrayOfSubmissions);
 
   // Write out the CSV file for a certain assignment_id
-  fs.writeFileSync('GradingPeriodAndCommentsForAssignment' + settings.properties.assignment_id.default + '.csv', commentsCsv);
+  fs.writeFileSync('GradingPeriodAndCommentsForAllStudents.csv', commentsCsv);
 }
