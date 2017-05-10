@@ -9,7 +9,7 @@
 var prompt = require('prompt');
 var fs = require('fs');
 var async = require('async');
-var reviewTimeAndComments = require('./review-comments-module.js');
+var reviewTimeAndComments = require('./review-module.js');
 
 /**
  * The main driving function of the program.
@@ -20,23 +20,28 @@ var reviewTimeAndComments = require('./review-comments-module.js');
  * @author Scott Nicholes
  */
 function main() {
+  console.log('');
+  
   console.log('Welcome to the program!');
   
+  console.log('----------------------------------------');
+  
+  // Perform Waterfall Chain of Async operations
   async.waterfall([
     loadSettings,
     promptSettings,
     saveSettings,
     promptStartProgram
   ], function (error, result, response) {
-    console.log('async performed successfully');
-    console.log(result);
-
     if (response === 'yes' || error === 'run_with_no_changes') {
       // Run the program
+      console.log('');
       reviewTimeAndComments(result);
+      
       return;
     } else {
       console.log('Ending Program...');
+      
       return;
     }
   });
@@ -55,10 +60,12 @@ function loadSettings(callback) {
   var exampleSettings = JSON.parse(exampleSettingsJson)
 
   // Display the current settings to the user
+  console.log('Settings to run conversion program with:');
   console.log('Request Url: ' + exampleSettings.properties.requestUrl.default);
   console.log('Course ID: ' + exampleSettings.properties.course_id.default);
   console.log('Assignment ID: ' + exampleSettings.properties.assignment_id.default);
   console.log('Request Token: ' + exampleSettings.properties.requestToken.default);
+  console.log('');
 
   // Prompt body
   var changeSettingsPrompt = {
@@ -103,7 +110,7 @@ function promptSettings(settings, callback) {
     settings.properties.requestToken.default = response.requestToken;
     settings.properties.assignment_id.default = response.assignment_id;
 
-    callback(null, response, exampleSettings); 
+    callback(null, response, settings); 
   });
 }
 
@@ -149,7 +156,11 @@ function promptStartProgram(settings, callback) {
   }
 
   // Display settings to the user
-  console.log(settings);
+  console.log('\n');
+  console.log('Request Url: ' + exampleSettings.properties.requestUrl.default);
+  console.log('Course ID: ' + exampleSettings.properties.course_id.default);
+  console.log('Assignment ID: ' + exampleSettings.properties.assignment_id.default);
+  console.log('Request Token: ' + exampleSettings.properties.requestToken.default);
 
   // Prompt the user
   prompt.get(startProgramPrompt, function (error, response) {

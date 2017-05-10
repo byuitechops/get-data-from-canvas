@@ -36,6 +36,9 @@ function main(settings) {
     //console.log(body);
     var arrayOfSubmissions = saveSubmissions(body);
     convertArrayToCsv(arrayOfSubmissions, settings);
+    
+    console.log('');
+    console.log('Program ended successfully');
   });
 }
 
@@ -105,7 +108,7 @@ function saveSubmissions(body) {
  */
 function convertArrayToCsv(arrayOfSubmissions, settings) {
   // Format the data into CSV
-  var commentsCsv = dsv.csvFormat(arrayOfObjects);
+  var commentsCsv = dsv.csvFormat(arrayOfSubmissions);
 
   // Write out the CSV file for a certain assignment_id
   fs.writeFileSync('GradingPeriodAndCommentsForAssignment' + settings.properties.assignment_id.default + '.csv', commentsCsv);
