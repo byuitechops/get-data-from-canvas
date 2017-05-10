@@ -15,24 +15,9 @@ function main() {
     console.log('async performed successfully');
     console.log(result);
     
+    // Run the program
     myModule(result);
   });
-
-
-
-  /*// Load the settings
-  var loadedSettings = loadSettings();
-
-  // Prompt if user would like to change settings
-  var changeSettingsDecision = promptChangeSettings();
-
-
-
-  // Update the starting program decision
-  var startProgramDecision = promptStartProgram();
-
-
-  // Run the program!*/
 }
 
 function loadSettings(callback) {
