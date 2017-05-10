@@ -3,6 +3,7 @@ var fs = require('fs');
 var async = require('async');
 var myModule = require('./review-comments-module.js');
 
+
 function main() {
   console.log('Welcome to the program!');
 
@@ -11,20 +12,31 @@ function main() {
     promptSettings,
     saveSettings,
     promptStartProgram
-  ], function(error, result) {
+  ], function (error, result, response) {
     console.log('async performed successfully');
     console.log(result);
-    
-    // Run the program
-    myModule(result);
+
+    if (response === 'yes' || error === 'run_with_no_changes') {
+      // Run the program
+      myModule(result);
+      return;
+    } else {
+      console.log('Ending Program...');
+      return;
+    }
   });
 }
 
+
 function loadSettings(callback) {
   var exampleSettingsJson = fs.readFileSync('settings.json', 'utf8');
-  console.log(exampleSettingsJson);
   var exampleSettings = JSON.parse(exampleSettingsJson)
-  console.log(exampleSettings);
+
+  // Display the current settings to the user
+  console.log('Request Url: ' + exampleSettings.properties.requestUrl.default);
+  console.log('Course ID: ' + exampleSettings.properties.course_id.default);
+  console.log('Assignment ID: ' + exampleSettings.properties.assignment_id.default);
+  console.log('Request Token: ' + exampleSettings.properties.requestToken.default);
 
   var changeSettingsPrompt = {
     properties: {
@@ -39,40 +51,14 @@ function loadSettings(callback) {
 
   prompt.start();
   prompt.get(changeSettingsPrompt, function (error, response) {
-    console.log(response);
+    //console.log(response);
     if (response.changeSettings === 'yes') {
       console.log('about to call promptSettings');
       callback(null, exampleSettings);
     } else {
-      callback();
+      callback('run_with_no_changes', exampleSettings);
     }
   });
-}
-
-function promptChangeSettings(callback) {
-  // This is our prompt with which we will prompt the user if they would like to change the settings
-  /*var changeSettingsPrompt = {
-    properties: {
-      changeSettings: {
-        description: 'Do you want to change the settings?(yes/no)',
-        type: 'string',
-        pattern: /^(?:yes\b|no\b)/,
-        message: 'Enter only \'yes\' or \'no\''
-      }
-    }
-  }
-
-  prompt.start();
-  prompt.get(changeSettingsPrompt, function (error, response) {
-    //console.log('I received: ' + response.programResponse);
-    //return response;
-
-    if (response === 'yes') {
-      return;
-    } else {
-      return callback(response);
-    }
-  });*/
 }
 
 function promptStartProgram(settings, callback) {
@@ -87,8 +73,11 @@ function promptStartProgram(settings, callback) {
     }
   }
 
+  // Display current settings to the user
+  console.log(settings);
+
   prompt.get(startProgramPrompt, function (error, response) {
-    callback(null, settings);
+    callback(null, settings, response.startProgram);
   });
 }
 
@@ -100,25 +89,21 @@ function promptSettings(exampleSettings, callback) {
     exampleSettings.properties.course_id.default = response.course_id;
     exampleSettings.properties.requestToken.default = response.requestToken;
     exampleSettings.properties.assignment_id.default = response.assignment_id;
-    
-    console.log(response);
 
-    console.log('About to call save settings');
-    callback(null, response, exampleSettings); // ASYNC:  For next function: saveSettings
-    
-    // Save the settings that were changed, if any
-    //saveSettings(exampleSettings);
+    // ASYNC:  For next function: saveSettings
+    callback(null, response, exampleSettings); 
   });
 }
 
 function saveSettings(loadedSettings, exampleSettings, callback) {
+  // Save new defaults
   var strungSettings = JSON.stringify(exampleSettings)
   fs.writeFileSync('settings.json', strungSettings);
-  
-  var jsonResponse = JSON.stringify(loadedSettings);
-  fs.writeFileSync('settingsChanges.txt', jsonResponse);
-  
-  console.log('About to call startProgramPrompt');
+
+  // Save new Settings.  Currently, we use the new default file.
+  /*var jsonResponse = JSON.stringify(loadedSettings);
+  fs.writeFileSync('settingsChanges.txt', jsonResponse);*/
+
   callback(null, exampleSettings);
 }
 
