@@ -1,11 +1,13 @@
 var myModule = require('./review-comments-module.js');
 
 var fs = require('fs');
+var readline = require('readline');
+
 
 function main() {
   // load the settings
   var settings = loadSettings();
-  
+
   // pass the settings to my module
   myModule(settings);
 }
