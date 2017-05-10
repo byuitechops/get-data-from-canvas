@@ -1,5 +1,5 @@
 /*************************************************************
- * queryData.js
+ * 
  *
  * This program gets certain student information from a
  * Canvas LMS course, such as number of page views and how
@@ -9,6 +9,8 @@
  * 
  *************************************************************/
 
+// Export this module
+module.exports = main;
 
 // Module Declarations
 var request = require('request'); // For various https requests
@@ -17,13 +19,15 @@ var dsv = require('d3-dsv'); // For d3-dsv csv conversion node
 var qs = require('qs');
 
 function main(settings) {
+  console.log('module started');
+  
   var requestUrl = generateUrl(settings);
 
   // Perform the GET request and generate CSV file
   request.get(requestUrl, function (error, response, body) {
     //console.log(body);
     var arrayOfObjects = saveBodyElements(body);
-    convertArrayToCsv(arrayOfObjects);
+    convertArrayToCsv(arrayOfObjects, settings);
   });
 }
 
@@ -31,7 +35,7 @@ function main(settings) {
 
 /**
  * This function generates the appropriate GET request URL,
- * based upon user input.
+ * based upon the settings.
  * 
  * @param {String} queryType The type of data we are searching for.
  * @return {String} The Request URL needed in order to perform
@@ -39,27 +43,14 @@ function main(settings) {
  * @author Scott Nicholes
  */
 function generateUrl(settings) {
-  // Based on the queryType, generate the appropriate URL
-  var url = '';
-
-
-  // REFORM: Get the parameters from the Settings
+  console.log('course_id: ' + settings.properties.course_id.default);
+  console.log('assignment_id: ' + settings.properties.assignment_id.default);
   
-  url = 'https://byui.instructure.com/api/v1/courses/' + settings.course_id + '/assignments/' + settings.assignment_id + '/submissions/';
-
-
-  var parametersString = process.argv[3];
-  //console.log(parametersString);
-  var parametersObject = qs.parse(parametersString);
-  //console.log(parametersObject);
-  url = 'https://byui.instructure.com/api/v1/courses/' + parametersObject.course_id + '/assignments/' + parametersObject.assignment_id + '/submissions/?include[]=user&include[]=submission_comments?&access_token=';
-
-
-  var accessToken = process.argv[4];
-  url += accessToken;
-
-  //console.log(accessToken);
-  console.log('request URL: ' + url);
+  var url = 'https://byui.instructure.com/api/v1/courses/' + settings.properties.course_id.default + '/assignments/' + settings.properties.assignment_id.default + '/submissions/?include[]=user&include[]=submission_comments&access_token=';
+  
+  url += settings.properties.requestToken.default;
+  
+  console.log(url);
 
   return url;
 }
@@ -75,13 +66,13 @@ function generateUrl(settings) {
  *                             Object that we are querying.
  * @author Scott Nicholes
  */
-function saveBodyElements(body, queryType) {
+function saveBodyElements(body) {
   var arrayOfObjects = [];
 
   //console.log(body);
   var parsedBody = JSON.parse(body);
 
-  //console.log(parsedBody);
+  console.log(parsedBody);
   /*parsedBody.forEach(function (submission) {
     var newSubmissionTime = {
       student_id: submission.user.id,
@@ -109,13 +100,9 @@ function saveBodyElements(body, queryType) {
         commenter: commentObject.author.display_name
       }
 
-      console.log(newSubmissionComment);
+      //console.log(newSubmissionComment);
       arrayOfObjects.push(newSubmissionComment);
     });
-
-    /*submission.submission_comments.forEach(function (commentObject) {
-      arrayOfComments.push(commentObject.comment);
-    });*/
   });
 
   return arrayOfObjects;
@@ -130,12 +117,9 @@ function saveBodyElements(body, queryType) {
  * @param {String} queryType      The type of data we are searching for.
  * @author Scott Nicholes                               
  */
-function convertArrayToCsv(arrayOfObjects, queryType) {
+function convertArrayToCsv(arrayOfObjects, settings) {
   //console.log(arrayOfObjects);
   var commentsCsv = dsv.csvFormat(arrayOfObjects);
 
-  var parametersString = process.argv[3];
-  var parametersObject = qs.parse(parametersString);
-
-  fs.writeFileSync('GradingPeriodAndCommentsForAssignment' + parametersObject.assignment_id + '.csv', commentsCsv);
+  fs.writeFileSync('GradingPeriodAndCommentsForAssignment' + settings.properties.assignment_id.default + '.csv', commentsCsv);
 }

@@ -6,19 +6,19 @@
       "default": "https://byui.instructure.com/"
     },
     "course_id": {
-      "description": "Send a happy sticker with request?(true/false)",
-      "type": "boolean",
-      "default": false
+      "description": "Enter course_id",
+      "type": "integer",
+      "default": "15"
     },
     "requestToken": {
       "description": "Enter request token here",
       "type": "string",
-      "default": "jfdkal;fjdkasl;fjfkasdl;"
+      "default": "10706~xnq7tzWczg5M4c47aKZscaMN7E6SCBD5v4j40vaXUj3ssmTzEvGX9bryfxw3Sk2e"
     },
     "assignment_id": {
       "description": "Enter assignment_id",
       "type": "integer",
-      "default": 0000
+      "default": "144"
     }
   }
 }
