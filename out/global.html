@@ -101,14 +101,14 @@
 
     
 
-    <h4 class="name" id="convertArrayToCsv"><span class="type-signature"></span>convertArrayToCsv<span class="signature">(arrayOfObjects, queryType)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="convertArrayToCsv"><span class="type-signature"></span>convertArrayToCsv<span class="signature">(arrayOfSubmissions, settings)</span><span class="type-signature"></span></h4>
 
     
 
 
 
 <div class="description">
-    This function converts the array of data Objects for which we searched into a .csv file, in a human-readable format.
+    This function converts the array of Submission Objects into a csv file.
 </div>
 
 
@@ -144,7 +144,7 @@
 
         <tr>
             
-                <td class="name"><code>arrayOfObjects</code></td>
+                <td class="name"><code>arrayOfSubmissions</code></td>
             
 
             <td class="type">
@@ -160,20 +160,20 @@
 
             
 
-            <td class="description last">Array of data objects we found from                               our GET request.</td>
+            <td class="description last">The data to be written to CSV</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>queryType</code></td>
+                <td class="name"><code>settings</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">String</span>
+<span class="param-type">Settings</span>
 
 
             
@@ -183,7 +183,7 @@
 
             
 
-            <td class="description last">The type of data we are searching for.</td>
+            <td class="description last">The settings that have information for the filename</td>
         </tr>
 
     
@@ -214,13 +214,6 @@
     
 
     
-    <dt class="tag-author">Author:</dt>
-    <dd class="tag-author">
-        <ul>
-            <li>Scott Nicholes</li>
-        </ul>
-    </dd>
-    
 
     
 
@@ -231,7 +224,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="getPageViewsOrGradedTime.js.html">getPageViewsOrGradedTime.js</a>, <a href="getPageViewsOrGradedTime.js.html#line133">line 133</a>
+        <a href="review-module.js.html">review-module.js</a>, <a href="review-module.js.html#line109">line 109</a>
     </li></ul></dd>
     
 
@@ -262,14 +255,14 @@
 
     
 
-    <h4 class="name" id="generateUrl"><span class="type-signature"></span>generateUrl<span class="signature">(queryType)</span><span class="type-signature"> &rarr; {String}</span></h4>
+    <h4 class="name" id="generateUrl"><span class="type-signature"></span>generateUrl<span class="signature">(settings)</span><span class="type-signature"> &rarr; {String}</span></h4>
 
     
 
 
 
 <div class="description">
-    This function generates the appropriate GET request URL,based upon user input.
+    This function generates the appropriate GET request URL,based upon the settings.
 </div>
 
 
@@ -305,13 +298,13 @@
 
         <tr>
             
-                <td class="name"><code>queryType</code></td>
+                <td class="name"><code>settings</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">String</span>
+<span class="param-type">Settings</span>
 
 
             
@@ -321,7 +314,7 @@
 
             
 
-            <td class="description last">The type of data we are searching for.</td>
+            <td class="description last">The object that has the components needed to generate a request URL.</td>
         </tr>
 
     
@@ -369,7 +362,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="getPageViewsOrGradedTime.js.html">getPageViewsOrGradedTime.js</a>, <a href="getPageViewsOrGradedTime.js.html#line39">line 39</a>
+        <a href="review-module.js.html">review-module.js</a>, <a href="review-module.js.html#line55">line 55</a>
     </li></ul></dd>
     
 
@@ -396,7 +389,7 @@
 
         
 <div class="param-desc">
-    The Request URL needed in order to perform                          the GET request.
+    The request URL.
 </div>
 
 
@@ -422,14 +415,14 @@
 
     
 
-    <h4 class="name" id="saveBodyElements"><span class="type-signature"></span>saveBodyElements<span class="signature">(queryType, body)</span><span class="type-signature"> &rarr; {Array}</span></h4>
+    <h4 class="name" id="loadSettings"><span class="type-signature"></span>loadSettings<span class="signature">(callback)</span><span class="type-signature"></span></h4>
 
     
 
 
 
 <div class="description">
-    This function makes a new Object for the type ofrequest sought, then adds it to an array of Objectsthat will be used to generate the CSV file later.
+    This function loads the current settings and then prompts the user if they would like to change the settings.
 </div>
 
 
@@ -465,13 +458,13 @@
 
         <tr>
             
-                <td class="name"><code>queryType</code></td>
+                <td class="name"><code>callback</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">String</span>
+<span class="param-type">function</span>
 
 
             
@@ -481,30 +474,7 @@
 
             
 
-            <td class="description last">The type of data we are searching for.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>body</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">The return body from the GET request.</td>
+            <td class="description last">The next function in the Waterfall chain.</td>
         </tr>
 
     
@@ -552,7 +522,864 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="getPageViewsOrGradedTime.js.html">getPageViewsOrGradedTime.js</a>, <a href="getPageViewsOrGradedTime.js.html#line88">line 88</a>
+        <a href="generate-data.js.html">generate-data.js</a>, <a href="generate-data.js.html#line57">line 57</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="main"><span class="type-signature"></span>main<span class="signature">(settings)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    The main driving function of the program.  This is the function that will be exported, comprising the module.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>settings</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Settings</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The settings to run the program with.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-author">Author:</dt>
+    <dd class="tag-author">
+        <ul>
+            <li>Scott Nicholes</li>
+        </ul>
+    </dd>
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="review-module.js.html">review-module.js</a>, <a href="review-module.js.html#line30">line 30</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="main"><span class="type-signature"></span>main<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    The main driving function of the program.It first welcomes the user and then continues to prompt the userif the settings should be changed before the actual conversionmodule is run.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-author">Author:</dt>
+    <dd class="tag-author">
+        <ul>
+            <li>Scott Nicholes</li>
+        </ul>
+    </dd>
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="generate-data.js.html">generate-data.js</a>, <a href="generate-data.js.html#line22">line 22</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="promptSettings"><span class="type-signature"></span>promptSettings<span class="signature">(settings, callback)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    Prompt the user to change the settings before the conversion modulesare run.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>settings</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Settings</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The Settings to be changed or accepted.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The next function in the Waterfall chain.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-author">Author:</dt>
+    <dd class="tag-author">
+        <ul>
+            <li>Scott Nicholes</li>
+        </ul>
+    </dd>
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="generate-data.js.html">generate-data.js</a>, <a href="generate-data.js.html#line105">line 105</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="promptStartProgram"><span class="type-signature"></span>promptStartProgram<span class="signature">(settings, callback)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    Prompt the user if they would like to start the conversion modules with thecurrent settings.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>settings</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Settings</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The staged settings ready to be used to run the program.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The last function to be called in the Waterfall chain.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-author">Author:</dt>
+    <dd class="tag-author">
+        <ul>
+            <li>Scott Nicholes</li>
+        </ul>
+    </dd>
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="generate-data.js.html">generate-data.js</a>, <a href="generate-data.js.html#line145">line 145</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="saveSettings"><span class="type-signature"></span>saveSettings<span class="signature">(newSettings, defaultSettings, callback)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    Save the settings that we just set.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>newSettings</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Settings</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The responses to the querys we made in promptSettings.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>defaultSettings</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Settings</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The new defaults to be saved.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The next function in the Waterfall chain.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="generate-data.js.html">generate-data.js</a>, <a href="generate-data.js.html#line124">line 124</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="saveSubmissions"><span class="type-signature"></span>saveSubmissions<span class="signature">(body)</span><span class="type-signature"> &rarr; {Array}</span></h4>
+
+    
+
+
+
+<div class="description">
+    Generate new Submission Objects of the kind of data we are looking for.Save these data items into an array.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>body</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Body response from the http GET request.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="review-module.js.html">review-module.js</a>, <a href="review-module.js.html#line76">line 76</a>
     </li></ul></dd>
     
 
@@ -579,7 +1406,7 @@
 
         
 <div class="param-desc">
-    An array of the type of data                            Object that we are querying.
+    An array of newSubmissions Objects that will be converted into CSVs.
 </div>
 
 
@@ -616,13 +1443,13 @@
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#convertArrayToCsv">convertArrayToCsv</a></li><li><a href="global.html#generateUrl">generateUrl</a></li><li><a href="global.html#saveBodyElements">saveBodyElements</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#convertArrayToCsv">convertArrayToCsv</a></li><li><a href="global.html#generateUrl">generateUrl</a></li><li><a href="global.html#loadSettings">loadSettings</a></li><li><a href="global.html#main">main</a></li><li><a href="global.html#promptSettings">promptSettings</a></li><li><a href="global.html#promptStartProgram">promptStartProgram</a></li><li><a href="global.html#saveSettings">saveSettings</a></li><li><a href="global.html#saveSubmissions">saveSubmissions</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Fri May 05 2017 12:39:04 GMT-0600 (Mountain Daylight Time)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Wed May 10 2017 14:50:49 GMT-0600 (Mountain Daylight Time)
 </footer>
 
 <script> prettyPrint(); </script>
