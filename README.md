@@ -1,3 +1,13 @@
+# Program Instructions
+- Download or git clone repository to an empty directory on your computer.
+- Run generate-data.js
+- OUTPUT: 3 CSV files:
+
+
+1. Student Page Views
+2. Student Quiz Statistics
+3. Student Quiz Comments and Reviewer turnaround time
+
 # What we need from Canvas
 
 ## *Quiz Stats*
