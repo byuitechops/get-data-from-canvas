@@ -10,6 +10,7 @@ var prompt = require('prompt');
 var fs = require('fs');
 var async = require('async');
 var reviewTimeAndComments = require('./review-module.js');
+var quizConverter = require('./quiz-module.js');
 
 /**
  * The main driving function of the program.
@@ -36,7 +37,9 @@ function main() {
     if (response === 'yes' || error === 'run_with_no_changes') {
       // Run the program
       console.log('');
+      //console.log(result);
       reviewTimeAndComments(result);
+      quizConverter(result.properties.requestToken.default, result.properties.course_id.default);
       
       return;
     } else {
@@ -63,7 +66,6 @@ function loadSettings(callback) {
   console.log('Settings to run conversion program with:');
   console.log('Request Url: ' + exampleSettings.properties.requestUrl.default);
   console.log('Course ID: ' + exampleSettings.properties.course_id.default);
-  console.log('Assignment ID: ' + exampleSettings.properties.assignment_id.default);
   console.log('Request Token: ' + exampleSettings.properties.requestToken.default);
   console.log('');
 
@@ -108,7 +110,6 @@ function promptSettings(settings, callback) {
     settings.properties.requestUrl.default = response.requestUrl;
     settings.properties.course_id.default = response.course_id;
     settings.properties.requestToken.default = response.requestToken;
-    settings.properties.assignment_id.default = response.assignment_id;
 
     callback(null, response, settings); 
   });
@@ -157,10 +158,9 @@ function promptStartProgram(settings, callback) {
 
   // Display settings to the user
   console.log('\n');
-  console.log('Request Url: ' + exampleSettings.properties.requestUrl.default);
-  console.log('Course ID: ' + exampleSettings.properties.course_id.default);
-  console.log('Assignment ID: ' + exampleSettings.properties.assignment_id.default);
-  console.log('Request Token: ' + exampleSettings.properties.requestToken.default);
+  console.log('Request Url: ' + settings.properties.requestUrl.default);
+  console.log('Course ID: ' + settings.properties.course_id.default);
+  console.log('Request Token: ' + settings.properties.requestToken.default);
 
   // Prompt the user
   prompt.get(startProgramPrompt, function (error, response) {

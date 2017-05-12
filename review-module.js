@@ -61,7 +61,7 @@ function generateUrl(settings) {
   
   url += settings.properties.requestToken.default;
   
-  console.log('Request URL: ' + url);
+  //console.log('Request URL: ' + url);
 
   return url;
 }
