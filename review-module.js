@@ -38,7 +38,7 @@ function main(settings) {
     convertArrayToCsv(arrayOfSubmissions);
     
     console.log('');
-    console.log('Program ended successfully');
+    //console.log('Program ended successfully');
   });
 }
 
@@ -116,4 +116,5 @@ function convertArrayToCsv(arrayOfSubmissions) {
 
   // Write out the CSV file for a certain assignment_id
   fs.writeFileSync('GradingPeriodAndCommentsForAllStudents.csv', commentsCsv);
+  console.log('Wrote Review File');
 }

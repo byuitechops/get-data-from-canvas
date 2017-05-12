@@ -38,9 +38,11 @@ function main(settings) {
 
     if (arrayOfPageViews === null) {
       endProgram(false);
+      return;
     } else {
       convertArrayToCsv(arrayOfPageViews, settings);
       endProgram(true);
+      return;
     }
   });
 }
@@ -49,9 +51,11 @@ function endProgram(success) {
   if (success) {
     console.log('');
     console.log('Program ended successfully');
+    return;
   } else {
     console.log('');
     console.log('Program ended with errors');
+    return;
   }
 }
 
@@ -91,7 +95,7 @@ function savePageViews(body) {
 
   //console.log(body);
   var parsedBody = JSON.parse(body);
-  console.log(parsedBody);
+  //console.log(parsedBody);
 
   if (!Array.isArray(parsedBody)) {
     console.error('User is not Admin');
@@ -124,4 +128,5 @@ function convertArrayToCsv(arrayOfPageViews, settings) {
 
   // Write out the CSV file for a certain assignment_id
   fs.writeFileSync('PageViews for Student' + settings.properties.student_id.default+'.csv', commentsCsv);
+  console.log('Wrote Page Views Module');
 }

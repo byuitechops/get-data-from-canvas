@@ -117,6 +117,7 @@ function printCSV(data, fileName) {
   headerOrder = headerOrder.concat(questionHeaders)
   // write to our file
   fs.writeFileSync(fileName, dsv.csvFormat(arr, headerOrder))
+  console.log('Wrote Quiz File');
 }
 
 /** Get this thing rolling */
