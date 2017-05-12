@@ -11,6 +11,7 @@ var fs = require('fs');
 var async = require('async');
 var reviewTimeAndComments = require('./review-module.js');
 var quizConverter = require('./quiz-module.js');
+var pageViews = require('./page-views-module.js');
 
 /**
  * The main driving function of the program.
@@ -40,6 +41,7 @@ function main() {
       //console.log(result);
       reviewTimeAndComments(result);
       quizConverter(result.properties.requestToken.default, result.properties.course_id.default);
+      pageViews(result);
       
       return;
     } else {
@@ -59,14 +61,15 @@ function main() {
  */
 function loadSettings(callback) {
   // Load the current settings from settings.json
-  var exampleSettingsJson = fs.readFileSync('settings.json', 'utf8');
-  var exampleSettings = JSON.parse(exampleSettingsJson)
+  var settingsJson = fs.readFileSync('settings.json', 'utf8');
+  var settings = JSON.parse(settingsJson)
 
   // Display the current settings to the user
   console.log('Settings to run conversion program with:');
-  console.log('Request Url: ' + exampleSettings.properties.requestUrl.default);
-  console.log('Course ID: ' + exampleSettings.properties.course_id.default);
-  console.log('Request Token: ' + exampleSettings.properties.requestToken.default);
+  console.log('Request Url: ' + settings.properties.requestUrl.default);
+  console.log('Course ID: ' + settings.properties.course_id.default);
+  console.log('Student ID: ' + settings.properties.student_id.default);
+  console.log('Request Token: ' + settings.properties.requestToken.default);
   console.log('');
 
   // Prompt body
@@ -87,10 +90,10 @@ function loadSettings(callback) {
     //console.log(response);
     if (response.changeSettings === 'yes') {
       // Continue the Waterfall to prompt the user for changes
-      callback(null, exampleSettings);
+      callback(null, settings);
     } else {
       // Send the error flag to run with no changes along with the current settings
-      callback('run_with_no_changes', exampleSettings);
+      callback('run_with_no_changes', settings);
     }
   });
 }
@@ -109,6 +112,7 @@ function promptSettings(settings, callback) {
     // Save the values that we have set to be the new defaults
     settings.properties.requestUrl.default = response.requestUrl;
     settings.properties.course_id.default = response.course_id;
+    settings.properties.student_id.default = response.student_id;
     settings.properties.requestToken.default = response.requestToken;
 
     callback(null, response, settings); 
@@ -160,6 +164,7 @@ function promptStartProgram(settings, callback) {
   console.log('\n');
   console.log('Request Url: ' + settings.properties.requestUrl.default);
   console.log('Course ID: ' + settings.properties.course_id.default);
+  console.log('Student ID: ' + settings.properties.student_id.default);
   console.log('Request Token: ' + settings.properties.requestToken.default);
 
   // Prompt the user
