@@ -17,7 +17,7 @@ module.exports = main;
 var request = require('request'); // For various https requests
 var fs = require('fs'); // For fs file-system module
 var dsv = require('d3-dsv'); // For d3-dsv csv conversion node
-var qs = require('qs');
+var async = require('async');
 
 /**
  * The main driving function of the program.  This is the 
@@ -28,18 +28,25 @@ var qs = require('qs');
  * @author Scott Nicholes                           
  */
 function main(settings) {
-  // Generate the url to GET request with
-  var requestUrl = generateUrl(settings);
+    // Generate the url to GET request with
+    var requestUrl = generateUrl(settings);
 
-  // Perform the GET request and generate CSV file
-  request.get(requestUrl, function (error, response, body) {
-    //console.log(body);
-    var arrayOfSubmissions = saveSubmissions(body);
-    convertArrayToCsv(arrayOfSubmissions);
-    
-    console.log('');
-    //console.log('Program ended successfully');
-  });
+    //console.log(requestUrl);
+
+    // Perform the GET request and generate CSV file
+    //async.mapLimit()
+
+    request.get(requestUrl, function (error, response, body) {
+        if (error) {
+            //console.error(error);
+        }
+        //console.log(body);
+        var arrayOfSubmissions = saveSubmissions(body);
+        convertArrayToCsv(arrayOfSubmissions);
+
+        console.log('');
+        //console.log('Program ended successfully');
+    });
 }
 
 
@@ -53,17 +60,22 @@ function main(settings) {
  * @author Scott Nicholes                    
  */
 function generateUrl(settings) {
-//  console.log('course_id: ' + settings.properties.course_id.default);
-//  console.log('assignment_id: ' + settings.properties.assignment_id.default);
-  
-  // Core URL to get a Submission Object
-  var url = 'https://byui.instructure.com/api/v1/courses/' + settings.properties.course_id.default + '/students/submissions/?student_ids[]=all&include[]=user&include[]=submission_comments&include[]=assignment&access_token=';
-  
-  url += settings.properties.requestToken.default;
-  
-  //console.log('Request URL: ' + url);
+    //  console.log('course_id: ' + settings.properties.course_id.default);
+    //  console.log('assignment_id: ' + settings.properties.assignment_id.default);
 
-  return url;
+    // Core URL to get a Submission Object
+    var url;
+    if (settings.properties.requestUrl.default === 'byui') {
+        url = 'https://byui.instructure.com/api/v1/courses/' + settings.properties.course_id.default+'/students/submissions/?student_ids[]=all&include[]=user&include[]=submission_comments&include[]=assignment&access_token=';
+    } else {
+        url = 'https://byuh.instructure.com/api/v1/courses/' + settings.properties.course_id.default+'/students/submissions/?student_ids[]=all&include[]=user&include[]=submission_comments&include[]=assignment&access_token=';
+    }
+
+    url += settings.properties.requestToken.default;
+
+    //console.log('Request URL: ' + url);
+
+    return url;
 }
 
 /**
@@ -74,34 +86,51 @@ function generateUrl(settings) {
  * @returns {Array}  An array of newSubmissions Objects that will be converted into CSVs.
  */
 function saveSubmissions(body) {
-  var newSubmissions = [];
+    var newSubmissions = [];
+    var newSubmissionsWithoutComments = [];
+    var newSubmissionsWithComments = [];
 
-  //console.log(body);
-  var parsedBody = JSON.parse(body);
-  
-  //console.log(parsedBody);
+    var parsedBody = JSON.parse(body);
 
-  parsedBody.forEach(function (submission) {
-    submission.submission_comments.forEach(function (commentObject) {
-      var newSubmissionComment = {
-        student_id: submission.user.id,
-        student_name: submission.user.name,
-        assignment_id: submission.assignment.id,
-        assignment_name: submission.assignment.name,
-        grader_id: submission.grader_id,
-        time_submitted: submission.submitted_at,
-        time_graded: submission.graded_at,
-        comments: commentObject.comment,
-        time_commented: commentObject.created_at,
-        commenter: commentObject.author.display_name
-      }
+    parsedBody.forEach(function (submission) {
+        if (submission.submission_comments.length !== 0) {
+            submission.submission_comments.forEach(function (commentObject) {
+                var newSubmissionComment = {
+                    student_id: submission.user.id,
+                    student_name: submission.user.name,
+                    assignment_id: submission.assignment.id,
+                    assignment_name: submission.assignment.name,
+                    grader_id: submission.grader_id,
+                    time_submitted: submission.submitted_at,
+                    time_graded: submission.graded_at,
+                    comments: commentObject.comment,
+                    time_commented: commentObject.created_at,
+                    commenter: commentObject.author.display_name
+                }
 
-      //console.log(newSubmissionComment);
-      newSubmissions.push(newSubmissionComment);
+                //console.log(newSubmissionComment);
+                newSubmissionsWithComments.push(newSubmissionComment);
+            });
+        } else {
+            var newSubmissionObject = {
+                student_id: submission.user.id,
+                student_name: submission.user.name,
+                assignment_id: submission.assignment.id,
+                assignment_name: submission.assignment.name,
+                grader_id: submission.grader_id,
+                time_submitted: submission.submitted_at,
+                time_graded: submission.graded_at
+            }
+
+            newSubmissionsWithoutComments.push(newSubmissionObject);
+        }
     });
-  });
 
-  return newSubmissions;
+    // Combine the 2 arrays into a 2 element array
+    newSubmissions[0] = newSubmissionsWithComments;
+    newSubmissions[1] = newSubmissionsWithoutComments;
+
+    return newSubmissions;
 }
 
 /**
@@ -111,10 +140,12 @@ function saveSubmissions(body) {
  * @param {Settings} settings           The settings that have information for the filename
  */
 function convertArrayToCsv(arrayOfSubmissions) {
-  // Format the data into CSV
-  var commentsCsv = dsv.csvFormat(arrayOfSubmissions);
+    // Format the data into CSVs
+    var commentsCsv = dsv.csvFormat(arrayOfSubmissions[0]);
+    var noCommentsCsv = dsv.csvFormat(arrayOfSubmissions[1]);
 
-  // Write out the CSV file for a certain assignment_id
-  fs.writeFileSync('GradingPeriodAndCommentsForAllStudents.csv', commentsCsv);
-  console.log('Wrote Review File');
+    // Write out the CSV files
+    fs.writeFileSync('GradingPeriodAndCommentsForAllStudents.csv', commentsCsv);
+    fs.writeFileSync('GradingPeriodNoComments.csv', noCommentsCsv);
+    console.log('Wrote Review Files');
 }

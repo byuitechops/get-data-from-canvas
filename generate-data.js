@@ -22,34 +22,37 @@ var pageViews = require('./page-views-module.js');
  * @author Scott Nicholes
  */
 function main() {
-  console.log('');
-  
-  console.log('Welcome to the program!');
-  
-  console.log('----------------------------------------');
-  
-  // Perform Waterfall Chain of Async operations
-  async.waterfall([
+    console.log('');
+
+    console.log('Welcome to the program!');
+
+    console.log('----------------------------------------');
+
+    // Perform Waterfall Chain of Async operations
+    async.waterfall([
     loadSettings,
     promptSettings,
     saveSettings,
     promptStartProgram
   ], function (error, result, response) {
-    if (response === 'yes' || error === 'run_with_no_changes') {
-      // Run the program
-      console.log('');
-      //console.log(result);
-      reviewTimeAndComments(result);
-      quizConverter(result.properties.requestToken.default, result.properties.course_id.default);
-      pageViews(result);
-      
-      return;
-    } else {
-      console.log('Ending Program...');
-      
-      return;
-    }
-  });
+        if (response === 'yes' || error === 'run_with_no_changes') {
+            // Run the program
+            console.log('');
+
+            // Run each module
+            reviewTimeAndComments(result);
+
+            quizConverter(result.properties.requestToken.default, result.properties.course_id.default, result.properties.requestUrl.default);
+
+            pageViews(result);
+
+            return;
+        } else {
+            console.log('Ending Program...');
+
+            return;
+        }
+    });
 }
 
 /**
@@ -60,42 +63,42 @@ function main() {
  * @author Scott Nicholes           
  */
 function loadSettings(callback) {
-  // Load the current settings from settings.json
-  var settingsJson = fs.readFileSync('settings.json', 'utf8');
-  var settings = JSON.parse(settingsJson)
+    // Load the current settings from settings.json
+    var settingsJson = fs.readFileSync('settings.json', 'utf8');
+    var settings = JSON.parse(settingsJson)
 
-  // Display the current settings to the user
-  console.log('Settings to run conversion program with:');
-  console.log('Request Url: ' + settings.properties.requestUrl.default);
-  console.log('Course ID: ' + settings.properties.course_id.default);
-  console.log('Student ID: ' + settings.properties.student_id.default);
-  console.log('Request Token: ' + settings.properties.requestToken.default);
-  console.log('');
+    // Display the current settings to the user
+    console.log('Settings to run conversion program with:');
+    console.log('Request Url: ' + settings.properties.requestUrl.default);
+    console.log('Course ID: ' + settings.properties.course_id.default);
+    console.log('Student ID: ' + settings.properties.student_id.default);
+    console.log('Request Token: ' + settings.properties.requestToken.default);
+    console.log('');
 
-  // Prompt body
-  var changeSettingsPrompt = {
-    properties: {
-      changeSettings: {
-        description: 'Do you want to change the settings?(yes/no)',
-        type: 'string',
-        pattern: /^(?:yes\b|no\b)/,
-        message: 'Enter only \'yes\' or \'no\''
-      }
+    // Prompt body
+    var changeSettingsPrompt = {
+        properties: {
+            changeSettings: {
+                description: 'Do you want to change the settings?(yes/no)',
+                type: 'string',
+                pattern: /^(?:yes\b|no\b)/,
+                message: 'Enter only \'yes\' or \'no\''
+            }
+        }
     }
-  }
 
-  // Begin prompting user
-  prompt.start();
-  prompt.get(changeSettingsPrompt, function (error, response) {
-    //console.log(response);
-    if (response.changeSettings === 'yes') {
-      // Continue the Waterfall to prompt the user for changes
-      callback(null, settings);
-    } else {
-      // Send the error flag to run with no changes along with the current settings
-      callback('run_with_no_changes', settings);
-    }
-  });
+    // Begin prompting user
+    prompt.start();
+    prompt.get(changeSettingsPrompt, function (error, response) {
+        //console.log(response);
+        if (response.changeSettings === 'yes') {
+            // Continue the Waterfall to prompt the user for changes
+            callback(null, settings);
+        } else {
+            // Send the error flag to run with no changes along with the current settings
+            callback('run_with_no_changes', settings);
+        }
+    });
 }
 
 /**
@@ -108,15 +111,15 @@ function loadSettings(callback) {
  * @author Scott Nicholes
  */
 function promptSettings(settings, callback) {
-  prompt.get(settings, function (error, response) {
-    // Save the values that we have set to be the new defaults
-    settings.properties.requestUrl.default = response.requestUrl;
-    settings.properties.course_id.default = response.course_id;
-    settings.properties.student_id.default = response.student_id;
-    settings.properties.requestToken.default = response.requestToken;
+    prompt.get(settings, function (error, response) {
+        // Save the values that we have set to be the new defaults
+        settings.properties.requestUrl.default = response.requestUrl;
+        settings.properties.course_id.default = response.course_id;
+        settings.properties.student_id.default = response.student_id;
+        settings.properties.requestToken.default = response.requestToken;
 
-    callback(null, response, settings); 
-  });
+        callback(null, response, settings);
+    });
 }
 
 /**
@@ -127,15 +130,15 @@ function promptSettings(settings, callback) {
  * @param {function} callback        The next function in the Waterfall chain.
  */
 function saveSettings(newSettings, defaultSettings, callback) {
-  // Save new defaults
-  var strungSettings = JSON.stringify(defaultSettings)
-  fs.writeFileSync('settings.json', strungSettings);
+    // Save new defaults
+    var strungSettings = JSON.stringify(defaultSettings)
+    fs.writeFileSync('settings.json', strungSettings);
 
-  // Save new Settings.  Currently, we use the new default file.
-  /*var jsonResponse = JSON.stringify(newSettings);
-  fs.writeFileSync('settingsChanges.txt', jsonResponse);*/
+    // Save new Settings.  Currently, we use the new default file.
+    /*var jsonResponse = JSON.stringify(newSettings);
+    fs.writeFileSync('settingsChanges.txt', jsonResponse);*/
 
-  callback(null, defaultSettings);
+    callback(null, defaultSettings);
 }
 
 /**
@@ -148,29 +151,29 @@ function saveSettings(newSettings, defaultSettings, callback) {
  * @author Scott Nicholes
  */
 function promptStartProgram(settings, callback) {
-  // Prompt body
-  var startProgramPrompt = {
-    properties: {
-      startProgram: {
-        description: 'Do you want to start the program with the current settings?(yes/no)',
-        type: 'string',
-        pattern: /^(?:yes\b|no\b)/,
-        message: 'Enter only \'yes\' or \'no\''
-      }
+    // Prompt body
+    var startProgramPrompt = {
+        properties: {
+            startProgram: {
+                description: 'Do you want to start the program with the current settings?(yes/no)',
+                type: 'string',
+                pattern: /^(?:yes\b|no\b)/,
+                message: 'Enter only \'yes\' or \'no\''
+            }
+        }
     }
-  }
 
-  // Display settings to the user
-  console.log('\n');
-  console.log('Request Url: ' + settings.properties.requestUrl.default);
-  console.log('Course ID: ' + settings.properties.course_id.default);
-  console.log('Student ID: ' + settings.properties.student_id.default);
-  console.log('Request Token: ' + settings.properties.requestToken.default);
+    // Display settings to the user
+    console.log('\n');
+    console.log('Request Url: ' + settings.properties.requestUrl.default);
+    console.log('Course ID: ' + settings.properties.course_id.default);
+    console.log('Student ID: ' + settings.properties.student_id.default);
+    console.log('Request Token: ' + settings.properties.requestToken.default);
 
-  // Prompt the user
-  prompt.get(startProgramPrompt, function (error, response) {
-    callback(null, settings, response.startProgram);
-  });
+    // Prompt the user
+    prompt.get(startProgramPrompt, function (error, response) {
+        callback(null, settings, response.startProgram);
+    });
 }
 
 // Run Main
