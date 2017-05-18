@@ -38,12 +38,14 @@ function main() {
             console.log('');
 
             // Run each module
-			var props = result.properties;
+            var props = result.properties;
             reviewTimeAndComments(result);
 
             quizConverter(props.requestToken.default, props.course_id.default, props.requestUrl.default);
 
-            pageViews(result);
+            success = pageViews(result);
+
+            endProgram(success);
 
             return;
         } else {
@@ -173,6 +175,18 @@ function promptStartProgram(settings, callback) {
     prompt.get(startProgramPrompt, function (error, response) {
         callback(null, settings, response.startProgram);
     });
+}
+
+function endProgram(success) {
+    if (success) {
+        console.log('');
+        console.log('Program ended successfully');
+        return;
+    } else {
+        console.log('');
+        console.log('Program ended with errors');
+        return;
+    }
 }
 
 // Run Main
