@@ -16,7 +16,7 @@ var fs = require('fs'); // For fs file-system module
 var dsv = require('d3-dsv'); // For d3-dsv csv conversion node
 var qs = require('qs');
 var async = require('async');
-var Canvas = require('../../canvas-api-wrapper')
+var Canvas = require('canvas-api-wrapper')
 var canvas;
 /**
  * The main driving function of the program.  This is the 
@@ -29,39 +29,42 @@ var canvas;
 function main(settings) {
     canvas = new Canvas(settings.properties.requestToken.default, settings.properties.requestUrl.default);
 
-    call(`/api/v1/accounts/self/roles`, function (roles) {
-        if (roles[0].role === 'AccountAdmin') {
-            call(`courses/${settings.properties.course_id.default}/students`, function (students) {
-                // Students should be an Array
-                console.log(students);
+    call(`/api/v1/accounts/self/roles`, function (rolesError, roles) {
+        if (rolesError) {
+            if (rolesError === '401') {
+                console.error('Page Views Error Code: ' + rolesError + ': Unauthorized.  Please supply an Admin Access Token');
+                return;
+            } else {
+                console.error('Page Views Error Code: ' + rolesError);
+                return;
+            }
+        } else if (roles[0].role === 'AccountAdmin') {
+            call(`courses/${settings.properties.course_id.default}/students`, function (err, students) {
+                // Check for errors
+                if (err) {
+                    console.error(err);
+                    return;
+                }
 
-                // Loop through all the students
-                async.mapLimit(students, 20, function (student, callback) {
-                    call(`users/${student.id}/page_views`, function (pageViews) {
+                function callPageViews(student, callback) {
+                    call(`users/${student.id}/page_views`, function (pageViewError, pageViews) {
+                        // Check for errors
+                        if (pageViewError) {
+                            callback(pageViewError, null);
+                        }
+
                         var newPageViews = savePageViews(pageViews);
                         callback(null, newPageViews);
-                    }, function (result) {
-                        var pageViewsOut = result.reduce(function (accum, currentValue) {
-                            return accum.concat(currentValue);
-                        }, []);
-
-                        convertArrayToCsv(pageViewsOut, settings);
                     });
-                })
+                }
 
-                students.forEach(function (student) {
-                    call(`users/${student.id}/page_views`, function (pageViews) {
-                        var newPageViews = savePageViews(pageViews);
+                // Loop through all the students
+                async.mapLimit(students, 20, callPageViews, function (result) {
+                    var pageViewsOut = result.reduce(function (accum, currentValue) {
+                        return accum.concat(currentValue);
+                    }, []);
 
-                        if (newPageViews === null) {
-                            endProgram(false);
-                            return;
-                        } else {
-                            convertArrayToCsv(newPageViews, settings);
-                            endProgram(true);
-                            return;
-                        }
-                    });
+                    convertArrayToCsv(pageViewsOut, settings);
                 });
             });
 
@@ -74,34 +77,12 @@ function main(settings) {
 }
 
 function call(apiCall, callback) {
-    canvas.call(apiCall).then(callback).catch(console.error)
+    canvas.call(apiCall).then(function (data) {
+        callback(null, data);
+    }, function (error) {
+        callback(error, null);
+    });
 }
-
-
-/**
-*
-This
-function generates the appropriate GET request URL,
-* based upon the settings.*
-    *
-    @param {
-        Settings
-    }
-settings The object that has the components needed to generate a request URL.*@returns {
-    String
-}
-The request URL.*
-    *
-    @author Scott Nicholes
-
-
-//users/${props.student_id.default}/page_views
-function generateUrl(settings, apiCall) {
-    // Core URL to get a Submission Object
-    var props = settings.properties
-    var url = `https://${props.requestUrl.default}.instructure.com/api/v1/${apiCall}/?access_token=${props.requestToken.default}`;
-    return url;
-}*/
 
 /**
  * Generate new Submission Objects of the kind of data we are looking for.
