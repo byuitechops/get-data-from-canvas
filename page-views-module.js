@@ -15,7 +15,8 @@ var request = require('request'); // For various https requests
 var fs = require('fs'); // For fs file-system module
 var dsv = require('d3-dsv'); // For d3-dsv csv conversion node
 var qs = require('qs');
-
+var Canvas = require('../../canvas-api-wrapper')
+var canvas;
 /**
  * The main driving function of the program.  This is the 
  * function that will be exported, comprising the module.
@@ -25,35 +26,44 @@ var qs = require('qs');
  * @author Scott Nicholes                           
  */
 function main(settings) {
-    // Generate the url to GET request with
-    var requestUrl = generateUrl(settings);
+	canvas = new Canvas(settings.properties.requestToken.default, settings.properties.requestUrl.default)
 
-    // Perform the GET request and generate CSV file
-    request.get(requestUrl, function (error, response, body) {
-        //console.log(body);
-        var arrayOfPageViews = savePageViews(body);
+	call(`courses/${settings.properties.course_id.default}/students`, function (students) {
+		// Students should be an Array
+		console.log(students);
 
-        if (arrayOfPageViews === null) {
-            endProgram(false);
-            return;
-        } else {
-            convertArrayToCsv(arrayOfPageViews, settings);
-            endProgram(true);
-            return;
-        }
-    });
+		// Loop through all the students
+		students.forEach(function (student) {
+			call(`users/${student.id}/page_views`, function (pageViews) {
+				var newPageViews = savePageViews(pageViews);
+
+				if (newPageViews === null) {
+					endProgram(false);
+					return;
+				} else {
+					convertArrayToCsv(newPageViews, settings);
+					endProgram(true);
+					return;
+				}
+			});
+		});
+	});
+}
+
+function call(apiCall,callback) {
+	canvas.call(apiCall).then(callback).catch(console.error)
 }
 
 function endProgram(success) {
-    if (success) {
-        console.log('');
-        console.log('Program ended successfully');
-        return;
-    } else {
-        console.log('');
-        console.log('Program ended with errors');
-        return;
-    }
+	if (success) {
+		console.log('');
+		console.log('Program ended successfully');
+		return;
+	} else {
+		console.log('');
+		console.log('Program ended with errors');
+		return;
+	}
 }
 
 
@@ -66,18 +76,13 @@ function endProgram(success) {
  *                     
  * @author Scott Nicholes                    
  */
-function generateUrl(settings) {
-    //  console.log('course_id: ' + settings.properties.course_id.default);
-    //  console.log('assignment_id: ' + settings.properties.assignment_id.default);
 
-    // Core URL to get a Submission Object
-    var url = 'https://byui.instructure.com/api/v1/users/' + settings.properties.student_id.default+'/page_views/?access_token=';
-
-    url += settings.properties.requestToken.default;
-
-    //console.log('Request URL: ' + url);
-
-    return url;
+//users/${props.student_id.default}/page_views
+function generateUrl(settings, apiCall) {
+	// Core URL to get a Submission Object
+	var props = settings.properties
+	var url = `https://${props.requestUrl.default}.instructure.com/api/v1/${apiCall}/?access_token=${props.requestToken.default}`;
+	return url;
 }
 
 /**
@@ -87,30 +92,28 @@ function generateUrl(settings) {
  * @param   {String} body Body response from the http GET request.
  * @returns {Array}  An array of newPageViews Objects that will be converted into CSVs.
  */
-function savePageViews(body) {
-    var newPageViews = [];
+function savePageViews(parsedBody) {
+	var newPageViews = [];
 
-    //console.log(body);
-    var parsedBody = JSON.parse(body);
-    //console.log(parsedBody);
+	console.log(parsedBody);
 
-    if (!Array.isArray(parsedBody)) {
-        console.error('User is not Admin');
-        return null;
-    }
+	if (!Array.isArray(parsedBody)) {
+		console.error('User is not Admin');
+		return null;
+	}
 
-    parsedBody.forEach(function (pageViewObject) {
-        var newPageView = {
-            student_id: pageViewObject.url,
-            url: pageViewObject.interaction_seconds,
-            timestampAccess: pageViewObject.created_at,
-            timeSpent: pageViewObject.links.user
-        };
+	parsedBody.forEach(function (pageViewObject) {
+		var newPageView = {
+			student_id: pageViewObject.links.user,
+			url: pageViewObject.url,
+			timestampAccess: pageViewObject.created_at,
+			timeSpent: pageViewObject.interaction_seconds
+		};
 
-        newPageViews.push(newPageView);
-    });
+		newPageViews.push(newPageView);
+	});
 
-    return newPageViews;
+	return newPageViews;
 }
 
 /**
@@ -120,12 +123,12 @@ function savePageViews(body) {
  * @param {Settings} settings           The settings that have information for the filename
  */
 function convertArrayToCsv(arrayOfPageViews, settings) {
-    // Format the data into CSV
-    var commentsCsv = dsv.csvFormat(arrayOfPageViews);
+	// Format the data into CSV
+	var pageViewsCsv = dsv.csvFormat(arrayOfPageViews);
 
-    // Write out the CSV file for a certain assignment_id
-    fs.writeFileSync('PageViews for Student' + settings.properties.student_id.default+'.csv', commentsCsv);
-    console.log('Wrote Page Views Module');
+	// Write out the CSV file for a certain assignment_id
+	fs.writeFileSync('PageViews for Student' + settings.properties.student_id.default+'.csv', pageViewsCsv);
+	console.log('Wrote Page Views Module');
 }
 
 // Export this module

@@ -48,12 +48,13 @@ function formatQuizStatistcs(quiz, quizID, output, data) {
 /** Pull out who answerserd which question */
 function formatQuizSubmissions(quiz, quizID, output) {
     //console.log(Array.isArray(quiz.quiz_submissions));
+	quiz.quiz_submissions = quiz.quiz_submissions || []
     quiz.quiz_submissions.forEach(submission => {
         // Grab stuff from the api's object
         output[quizID][submission.user_id] = output[quizID][submission.user_id] || {}
         output[quizID][submission.user_id].Attempts = submission.attempt
         output[quizID][submission.user_id].Score = submission.kept_score
-        output[quizID][submission.user_id].Durration = submission.time_spent
+        output[quizID][submission.user_id]["Duration In Seconds"] = submission.time_spent
         output[quizID][submission.user_id].Finished = new Date(submission.finished_at)
         output[quizID][submission.user_id].Started = new Date(submission.started_at)
         output[quizID][submission.user_id].Quiz = quizID
@@ -83,8 +84,8 @@ function forEachQuiz(data, canvas) {
 /** Turn the object into a map of name to ID */
 function formatStudents(data) {
     // all I need is a map from their name to their ID
-    data.students = data.students.reduce((obj, node) => {
-        obj[node.name] = node.id;
+    data.students = data.students.reduce((obj, student) => {
+        obj[student.name] = student.id;
         return obj
     }, {})
 }
@@ -101,7 +102,7 @@ function printCSV(data, fileName) {
         }
     }
     // This is to prevent the headers coming out in alphabetical order
-    var headerOrder = ['Student Name', 'Student ID', 'Quiz', 'Attempts', 'Score', 'Started', 'Finished', 'Durration']
+    var headerOrder = ['Student Name', 'Student ID', 'Quiz', 'Attempts', 'Score', 'Started', 'Finished', 'Duration In Seconds']
     // What is this list missing?
     var questionHeaders = Object.keys(arr.reduce((a, b) => Object.assign({}, a, b))).filter(n => headerOrder.indexOf(n) < 0)
 
@@ -129,17 +130,16 @@ module.exports = function main(accessToken, course_id, domain) {
     var canvas = Canvas(accessToken, domain);
     canvas.call(`courses/${courseID}/students`)
         .then(value => {
-            data['students'] = value;
+            data.students = value;
             return data;
         })
         .then(formatStudents)
         .then(canvas.wrapCall(`courses/${courseID}/quizzes`))
         .then(value => {
-            data['quizzes'] = value;
+            data.quizzes = value;
             return data;
         })
         .then(data => forEachQuiz(data, canvas))
         .then(output => printCSV(output, 'quizzes.csv'))
-        //.then(() => console.log('Done'))
         .catch(console.error)
 }

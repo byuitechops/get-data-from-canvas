@@ -23,9 +23,7 @@ var pageViews = require('./page-views-module.js');
  */
 function main() {
     console.log('');
-
     console.log('Welcome to the program!');
-
     console.log('----------------------------------------');
 
     // Perform Waterfall Chain of Async operations
@@ -40,9 +38,10 @@ function main() {
             console.log('');
 
             // Run each module
+			var props = result.properties;
             reviewTimeAndComments(result);
 
-            quizConverter(result.properties.requestToken.default, result.properties.course_id.default, result.properties.requestUrl.default);
+            quizConverter(props.requestToken.default, props.course_id.default, props.requestUrl.default);
 
             pageViews(result);
 

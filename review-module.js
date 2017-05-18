@@ -31,21 +31,15 @@ function main(settings) {
     // Generate the url to GET request with
     var requestUrl = generateUrl(settings);
 
-    //console.log(requestUrl);
-
     // Perform the GET request and generate CSV file
-    //async.mapLimit()
-
     request.get(requestUrl, function (error, response, body) {
         if (error) {
-            //console.error(error);
+            console.error(error);
         }
-        //console.log(body);
         var arrayOfSubmissions = saveSubmissions(body);
         convertArrayToCsv(arrayOfSubmissions);
 
         console.log('');
-        //console.log('Program ended successfully');
     });
 }
 
@@ -60,21 +54,10 @@ function main(settings) {
  * @author Scott Nicholes                    
  */
 function generateUrl(settings) {
-    //  console.log('course_id: ' + settings.properties.course_id.default);
-    //  console.log('assignment_id: ' + settings.properties.assignment_id.default);
-
     // Core URL to get a Submission Object
-    var url;
-    if (settings.properties.requestUrl.default === 'byui') {
-        url = 'https://byui.instructure.com/api/v1/courses/' + settings.properties.course_id.default+'/students/submissions/?student_ids[]=all&include[]=user&include[]=submission_comments&include[]=assignment&access_token=';
-    } else {
-        url = 'https://byuh.instructure.com/api/v1/courses/' + settings.properties.course_id.default+'/students/submissions/?student_ids[]=all&include[]=user&include[]=submission_comments&include[]=assignment&access_token=';
-    }
-
-    url += settings.properties.requestToken.default;
-
-    //console.log('Request URL: ' + url);
-
+	var props = settings.properties
+    var url = `https://${props.requestUrl.default}.instructure.com/api/v1/courses/${props.course_id.default}
+/students/submissions/?student_ids[]=all&include[]=user&include[]=submission_comments&include[]=assignment&access_token=${props.requestToken.default}`;
     return url;
 }
 
@@ -87,48 +70,25 @@ function generateUrl(settings) {
  */
 function saveSubmissions(body) {
     var newSubmissions = [];
-    var newSubmissionsWithoutComments = [];
-    var newSubmissionsWithComments = [];
 
     var parsedBody = JSON.parse(body);
 
     parsedBody.forEach(function (submission) {
-        if (submission.submission_comments.length !== 0) {
-            submission.submission_comments.forEach(function (commentObject) {
-                var newSubmissionComment = {
-                    student_id: submission.user.id,
-                    student_name: submission.user.name,
-                    assignment_id: submission.assignment.id,
-                    assignment_name: submission.assignment.name,
-                    grader_id: submission.grader_id,
-                    time_submitted: submission.submitted_at,
-                    time_graded: submission.graded_at,
-                    comments: commentObject.comment,
-                    time_commented: commentObject.created_at,
-                    commenter: commentObject.author.display_name
-                }
-
-                //console.log(newSubmissionComment);
-                newSubmissionsWithComments.push(newSubmissionComment);
-            });
-        } else {
-            var newSubmissionObject = {
-                student_id: submission.user.id,
-                student_name: submission.user.name,
-                assignment_id: submission.assignment.id,
-                assignment_name: submission.assignment.name,
-                grader_id: submission.grader_id,
-                time_submitted: submission.submitted_at,
-                time_graded: submission.graded_at
-            }
-
-            newSubmissionsWithoutComments.push(newSubmissionObject);
-        }
+		var newSubmissionObject = {
+			student_id: submission.user.id,
+			student_name: submission.user.name,
+			assignment_id: submission.assignment.id,
+			assignment_name: submission.assignment.name,
+			grader_id: submission.grader_id,
+			time_submitted: submission.submitted_at,
+			time_graded: submission.graded_at,
+			comments: submission.submission_comments.map(function(commentObject){return commentObject.comment}),
+			time_commented: submission.submission_comments.map(function(commentObject){return commentObject.created_at}),
+			commenter: submission.submission_comments.map(function(commentObject){return commentObject.author.display_name})
+		}
+		
+		newSubmissions.push(newSubmissionObject);
     });
-
-    // Combine the 2 arrays into a 2 element array
-    newSubmissions[0] = newSubmissionsWithComments;
-    newSubmissions[1] = newSubmissionsWithoutComments;
 
     return newSubmissions;
 }
@@ -141,11 +101,9 @@ function saveSubmissions(body) {
  */
 function convertArrayToCsv(arrayOfSubmissions) {
     // Format the data into CSVs
-    var commentsCsv = dsv.csvFormat(arrayOfSubmissions[0]);
-    var noCommentsCsv = dsv.csvFormat(arrayOfSubmissions[1]);
+    var commentsCsv = dsv.csvFormat(arrayOfSubmissions);
 
     // Write out the CSV files
     fs.writeFileSync('GradingPeriodAndCommentsForAllStudents.csv', commentsCsv);
-    fs.writeFileSync('GradingPeriodNoComments.csv', noCommentsCsv);
     console.log('Wrote Review Files');
 }
