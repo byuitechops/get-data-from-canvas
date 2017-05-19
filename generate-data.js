@@ -78,6 +78,7 @@ function loadSettings(callback) {
     var settingsJson = fs.readFileSync('settings.json', 'utf8');
     var settings = JSON.parse(settingsJson);
 
+    // Append certain elements that cannot be loaded from a file properly
     settings.properties.start_time.ask = function () {
         return prompt.history('runWithRange').value === 'yes'
     }
@@ -85,8 +86,6 @@ function loadSettings(callback) {
         return prompt.history('runWithRange').value === 'yes'
     }
     settings.properties.runWithRange.pattern = /^(?:yes\b|no\b)/
-
-    console.log(settings.properties.runWithRange.pattern);
 
     // Display the current settings to the user
     console.log('Settings to run conversion program with:');
@@ -102,7 +101,7 @@ function loadSettings(callback) {
     var changeSettingsPrompt = {
         properties: {
             changeSettings: {
-                description: 'Do you want to change the settings?(yes/no)',
+                description: 'Do you want to change the settings before running the program?(yes/no)',
                 type: 'string',
                 pattern: /^(?:yes\b|no\b)/,
                 message: 'Enter only \'yes\' or \'no\''
@@ -113,7 +112,6 @@ function loadSettings(callback) {
     // Begin prompting user
     prompt.start();
     prompt.get(changeSettingsPrompt, function (error, response) {
-        //console.log(response);
         if (response.changeSettings === 'yes') {
             // Continue the Waterfall to prompt the user for changes
             callback(null, settings);

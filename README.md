@@ -1,16 +1,22 @@
 # Program Instructions
-- Download or git clone repository to an empty directory on your computer.
-- Run generate-data.js
-- OUTPUT: 3 CSV files:
+1. Download or git clone repository to an empty directory on your computer.
+2. Run generate-data.js
+3. OUTPUT: 3 CSV files:
 
 
-1. Student Page Views (According to start and end time range)
-2. Student Quiz Statistics
-3. Student Quiz Comments and Reviewer turnaround time
+- Student Page Views (According to start and end time range)
+- Student Quiz Statistics
+- Student Quiz Comments and Reviewer turnaround time
+
+### Information needed to run program:
+- Course ID
+- An Access Token for the course you are looking up (preferably Admin)
+- What domain you are accessing (Example: byui, byuh)
+- If desired, a start and end time from which to get page view data
 
 # What we need from Canvas
 
-## *Quiz Stats*
+## *Quiz Statistics*
 
 ### Student Quiz Scores, Number of Attempts, Time Spent, Time Submitted and Statistics for each Question
 
@@ -37,7 +43,7 @@ Returns an array of submissions.  Each submission contains the attributes `score
 ----
 
 
-## *Content Stats*
+## *Page Views*
 
 
 ### Number of page views, Timestamp, and Time Spent by a student on each LMS page
@@ -68,7 +74,7 @@ Currently, this API call will only work if it is supplied an Admin Access Token 
 ---
 
 
-## *Review Stats*
+## *Review Statistics and Comments*
 
 
 ### Reviewer feedback (text sent to students about their performance), and turnaround time for grading
