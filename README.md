@@ -40,7 +40,6 @@ Returns an array of submissions, the submission contains the attributes `score`,
 ## *Content Stats*
 
 
-
 ### Number of page views, Timestamp, and Time Spent by a student on each LMS page
 
 ##### *Why:* 
@@ -63,21 +62,19 @@ Currently, this API call will only work if it is supplied an Admin Access Token 
 
 ##### *CSV Format:*
 |  | Student ID | URL | Time Accessed | Time Spent |
-| - | - | - | - | - | - |
+| - | - | - | - | - |
 | Visit | | | | | |
 
-
+---
 
 
 ## *Review Stats*
 
 
-
-
-### Reviewer feedback (text sent to students about their performance)
+### Reviewer feedback (text sent to students about their performance), and turnaround time for grading
 
 ##### *Why:* 
-To get comments that teachers have provided to the students
+To get comments that teachers have provided to the students.  Also, to assess how long it took reviewers to grade each submission.
 
 ##### *Calls Needed:*
 - [Get a single submission](https://canvas.instructure.com/doc/api/submissions.html#method.submissions_api.show)
@@ -88,55 +85,13 @@ GET /api/v1/courses/:course_id/assignments/:assignment_id/submissions/:user_id?i
 ##### *Explanation of Call:*
 This GET request returns a submission which contains `submission_comments`.  This attribute contains the comment, timestamp, and author for each submission.  Our program works so that it returns a list of comments for each submission, seperated by semi-colons (;).
 
+This API also returns a list of grading events, which contains information about the grader, when it was graded, and the actual grade.
+
 ##### *Limitations:*
 - **BETA** API
+- Canvas doesn't track when grading has begun and closed, but it does track when things have been graded.
 
 ##### *CSV Format:*	
 |  | Student ID | Student Name | Assignment ID | Grader ID | Time Submitted | Time Graded | Comments | Time Commented | Commenter
-| - | - | - | - | - | - |
+| - | - | - | - | - | - | - | - | - | - |
 | Assignment Submission | | | | | | | | | | |
-
----
-
-### Timestamp on when assessment was opened and completed/returned for review 
-
-##### *Questions for Henrie:*
-- Do we want the entire history of when assignments received grades?  Or, do we want only the most recent 
-change?
-
-##### *Why:* 
-To know how long it took to grade the assignments
-
-##### *Calls Needed:*
-
-- [GradeChangeEvent - by assignment](https://canvas.instructure.com/doc/api/grade_change_log.html#method.grade_change_audit_api.for_assignment)
-```
-GET /api/v1/audit/grade_change/assignments/:assignment_id
-```
-- [List assignment submissions (Submission Object)](https://canvas.instructure.com/doc/api/submissions.html#method.submissions_api.index)
-```
-GET /api/v1/courses/:course_id/assignments/:assignment_id/submissions
-```
-- [Gradebook history](https://canvas.instructure.com/doc/api/gradebook_history.html#method.gradebook_history_api.feed)
-```
-GET /api/v1/courses/:course_id/gradebook_history/feed
-```
-
-##### *Explanation of Calls:*
-
-Returns a list of grading events, which contains information about grader, timestamp, and grade.
-
-After investigating, the Gradebook History method is the best method if you don't have admin privileges.
-
-**[X]Program Written**
-
-##### *Limitations:*
-- Canvas doesn't track when grading has begun and closed, but it does track when things have been graded.
-- **BETA** API - Gradebook History
-- **Requires Admin Priveliges** - GradeChangeEvent
-
-##### *CSV Format:*
-
-|  | Student_id | Grader_id | Grader_Name | Timestamp Submitted | Timestamp Graded | 
-| - | - | - | - |
-| Student | | | | | | |
