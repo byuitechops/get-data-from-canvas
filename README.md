@@ -12,7 +12,7 @@
 
 ## *Quiz Stats*
 
-### Student Quiz Scores, Number of Attempts, Time Spent, and Time Submitted
+### Student Quiz Scores, Number of Attempts, Time Spent, Time Submitted and Statistics for each Question
 
 ##### *Why:* 
 To collect data on how well students are doing on a given quiz
@@ -24,7 +24,7 @@ GET /api/v1/courses/:course_id/quizzes/:quiz_id/submissions
 ```
 
 ##### *Explanation of Calls:*
-Returns an array of submissions, the submission contains the attributes `score`, `attempt`, `time_spent`, and `finished_at` which can be used for Quiz Score, Number of Attempts, Time Spent, and Time Submitted respectively.
+Returns an array of submissions.  Each submission contains the attributes `score`, `attempt`, `time_spent`, and `finished_at`.  
 
 ##### *Limitations:*
 - **BETA** API
