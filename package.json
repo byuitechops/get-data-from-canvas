@@ -1,8 +1,15 @@
 {
-  "name": "@scott93gps/get-data-from-canvas",
+  "name": "get-data-from-canvas",
   "version": "1.0.0",
   "description": "A program that performs GET requests to our Canvas Instance in order to get student statistics",
   "main": "generate-data.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/byuitechops/get-data-from-canvas"
+  },
   "dependencies": {
     "async": "^2.4.0",
     "canvas-api-wrapper": "^1.0.0",
@@ -11,14 +18,6 @@
     "prompt": "^1.0.0",
     "qs": "^1.2.2",
     "request": "^2.81.0"
-  },
-  "devDependencies": {},
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/byuitechops/get-data-from-canvas.git"
   },
   "keywords": [
     "BYUI",
@@ -32,5 +31,6 @@
   "bugs": {
     "url": "https://github.com/byuitechops/get-data-from-canvas/issues"
   },
-  "homepage": "https://github.com/byuitechops/get-data-from-canvas#readme"
+  "homepage": "https://github.com/byuitechops/get-data-from-canvas#readme",
+  "devDependencies": {}
 }
