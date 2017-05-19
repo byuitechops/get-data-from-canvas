@@ -30,8 +30,8 @@ Returns an array of submissions, the submission contains the attributes `score`,
 - **BETA** API
 
 ##### *CSV Format:*
-|  | Student Name | Student ID | Quiz ID | Number of Attempts | Score | Time Started | Time Finished | Time Spent(in seconds) | Statistics for each Question...
-| - | - | - | - | - | - | - | - | - |
+|  | Student Name | Student ID | Quiz ID | Number of Attempts | Score | Time Started | Time Finished | Time Spent(in seconds) | Statistics for each Question
+| - | - | - | - | - | - | - | - | - | - |
 | Quiz Submission | | | | | | | | | | |
 
 ----
