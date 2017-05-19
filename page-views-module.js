@@ -16,7 +16,6 @@ var fs = require('fs'); // For fs file-system module
 var dsv = require('d3-dsv'); // For d3-dsv csv conversion node
 var qs = require('qs');
 var async = require('async');
-var moment = require('moment');
 var Canvas = require('canvas-api-wrapper')
 var canvas;
 /**
