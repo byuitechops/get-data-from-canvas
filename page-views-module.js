@@ -30,6 +30,13 @@ var canvas;
 function main(settings) {
     canvas = new Canvas(settings.properties.requestToken.default, settings.properties.requestUrl.default);
 
+    var rangeOptions = {};
+    if (settings.properties.runWithRange.default === 'yes') {
+        rangeOptions.start_time = settings.properties.start_time.default;
+        rangeOptions.end_time = settings.properties.end_time.default;
+    }
+    console.log(rangeOptions);
+
     call(`/api/v1/accounts/self/roles`, {}, function (rolesError, roles) {
         if (rolesError) {
             if (rolesError === 401) {
@@ -48,11 +55,8 @@ function main(settings) {
                 }
 
                 // Loop through all the students
-                async.mapLimit(students, 20, function (student, callback) {
-                    call(`users/${student.id}/page_views`, {
-                        start_time: settings.properties.start_time.default,
-                        end_time: settings.properties.end_time.default
-                    }, function (pageViewError, pageViews) {
+                async.mapLimit(students, 30, function (student, callback) {
+                    call(`users/${student.id}/page_views`, rangeOptions, function (pageViewError, pageViews) {
                         // Check for errors
                         if (pageViewError) {
                             console.log(pageViewError);

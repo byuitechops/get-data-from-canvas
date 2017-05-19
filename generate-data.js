@@ -76,12 +76,23 @@ function main() {
 function loadSettings(callback) {
     // Load the current settings from settings.json
     var settingsJson = fs.readFileSync('settings.json', 'utf8');
-    var settings = JSON.parse(settingsJson)
+    var settings = JSON.parse(settingsJson);
+
+    settings.properties.start_time.ask = function () {
+        return prompt.history('runWithRange').value === 'yes'
+    }
+    settings.properties.end_time.ask = function () {
+        return prompt.history('runWithRange').value === 'yes'
+    }
+    settings.properties.runWithRange.pattern = /^(?:yes\b|no\b)/
+
+    console.log(settings.properties.runWithRange.pattern);
 
     // Display the current settings to the user
     console.log('Settings to run conversion program with:');
     console.log('Request Url: ' + settings.properties.requestUrl.default);
     console.log('Course ID: ' + settings.properties.course_id.default);
+    console.log('Start Program with Time Range for Page Views: ' + settings.properties.runWithRange.default);
     console.log('Start Time For Page Views: ' + settings.properties.start_time.default);
     console.log('End Time For Page Views: ' + settings.properties.end_time.default);
     console.log('Request Token: ' + settings.properties.requestToken.default);
@@ -130,6 +141,7 @@ function promptSettings(settings, callback) {
         settings.properties.start_time.default = response.start_time;
         settings.properties.end_time.default = response.end_time;
         settings.properties.requestToken.default = response.requestToken;
+        settings.properties.runWithRange.default = response.runWithRange;
 
         callback(null, response, settings);
     });
@@ -180,6 +192,7 @@ function promptStartProgram(settings, callback) {
     console.log('\n');
     console.log('Request Url: ' + settings.properties.requestUrl.default);
     console.log('Course ID: ' + settings.properties.course_id.default);
+    console.log('Start Program with Time Range for Page Views: ' + settings.properties.runWithRange.default)
     console.log('Start Time For Page Views: ' + settings.properties.start_time.default);
     console.log('End Time For Page Views: ' + settings.properties.end_time.default);
     console.log('Request Token: ' + settings.properties.requestToken.default);
