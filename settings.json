@@ -8,12 +8,17 @@
         "course_id": {
             "description": "Enter Course_Id",
             "type": "string",
-            "default": "15"
+            "default": "14"
         },
-        "student_id": {
-            "description": "Enter Student_Id(For User Page Views)",
+        "start_time": {
+            "description": "Enter start_time for student page views (Example: 2012-07-19T15:10:00)",
             "type": "string",
-            "default": "43"
+            "default": "2017-05-10"
+        },
+        "end_time": {
+            "description": "Enter end_time for student page views (Example: 2012-07-19T15:10:00)",
+            "type": "string",
+            "default": "2017-05-19"
         },
         "requestToken": {
             "description": "Enter request token",
