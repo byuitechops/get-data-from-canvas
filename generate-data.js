@@ -126,7 +126,7 @@ function loadSettings(callback) {
  * Prompt the user to change the settings before the conversion modules
  * are run.
  * 
- * @param {Settings} settings The Settings to be changed or accepted.
+ * @param {object} settings The Settings to be changed or accepted.
  * @param {function} callback The next function in the Waterfall chain.
  *                            
  * @author Scott Nicholes
@@ -148,8 +148,8 @@ function promptSettings(settings, callback) {
 /**
  * Save the settings that we just set.
  * 
- * @param {Settings} newSettings     The responses to the querys we made in promptSettings.
- * @param {Settings} defaultSettings The new defaults to be saved.
+ * @param {object} newSettings     The responses to the querys we made in promptSettings.
+ * @param {object} defaultSettings The new defaults to be saved.
  * @param {function} callback        The next function in the Waterfall chain.
  */
 function saveSettings(newSettings, defaultSettings, callback) {

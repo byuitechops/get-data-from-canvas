@@ -1,3 +1,10 @@
+/******************************************************
+ * Quiz-Module.js
+ * This module performs the GET requests necessary to
+ * get the quiz statistics needed for each question.
+ * 
+ * Author: Ben Earl
+ *******************************************************/
 var request = require('request')
 var dsv = require('d3-dsv')
 var fs = require('fs')

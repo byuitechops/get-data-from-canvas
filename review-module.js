@@ -23,7 +23,7 @@ var async = require('async');
  * The main driving function of the program.  This is the 
  * function that will be exported, comprising the module.
  * 
- * @param {Settings} settings The settings to run the program with.
+ * @param {object} settings The settings to run the program with.
  *                            
  * @author Scott Nicholes                           
  */
@@ -48,7 +48,7 @@ function main(settings) {
  * This function generates the appropriate GET request URL,
  * based upon the settings.
  * 
- * @param   {Settings} settings The object that has the components needed to generate a request URL.
+ * @param   {object} settings The object that has the components needed to generate a request URL.
  * @returns {String}   The request URL.
  *                     
  * @author Scott Nicholes                    
