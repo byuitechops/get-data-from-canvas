@@ -16,6 +16,7 @@ var fs = require('fs'); // For fs file-system module
 var dsv = require('d3-dsv'); // For d3-dsv csv conversion node
 var qs = require('qs');
 var async = require('async');
+var moment = require('moment');
 var Canvas = require('canvas-api-wrapper')
 var canvas;
 /**
@@ -31,7 +32,7 @@ function main(settings) {
 
     call(`/api/v1/accounts/self/roles`, function (rolesError, roles) {
         if (rolesError) {
-            if (rolesError === '401') {
+            if (rolesError === 401) {
                 console.error('Page Views Error Code: ' + rolesError + ': Unauthorized.  Please supply an Admin Access Token');
                 return;
             } else {
@@ -46,32 +47,22 @@ function main(settings) {
                     return;
                 }
 
-                function callPageViews(student, callback) {
-                    call(`users/${student.id}/page_views`, function (pageViewError, pageViews) {
-                        // Check for errors
-                        if (pageViewError) {
-                            callback(pageViewError, null);
-                        }
-
-                        var newPageViews = savePageViews(pageViews);
-                        callback(null, newPageViews);
-                    });
-                }
-
                 // Loop through all the students
-                async.mapLimit(students, 20, callPageViews, function (result) {
+                async.mapLimit(students, 20, callPageViews, function (mapError, result) {
+                    if (mapError) {
+                        //console.error(mapError);
+                        console.error('Arf');
+                        return;
+                    }
                     var pageViewsOut = result.reduce(function (accum, currentValue) {
                         return accum.concat(currentValue);
                     }, []);
 
-                    convertArrayToCsv(pageViewsOut, settings);
+                    convertArrayToCsv(pageViewsOut);
                 });
             });
 
-            return true;
-        } else {
-            console.log('User is not admin');
-            return false;
+            return;
         }
     });
 }
@@ -81,6 +72,20 @@ function call(apiCall, callback) {
         callback(null, data);
     }, function (error) {
         callback(error, null);
+    });
+}
+
+function callPageViews(student, callback) {
+    call(`users/${student.id}/page_views`, function (pageViewError, pageViews) {
+        // Check for errors
+        if (pageViewError) {
+            console.log(pageViewError);
+            callback(pageViewError, null);
+            //return;
+        } else {
+            var newPageViews = savePageViews(pageViews);
+            callback(null, newPageViews);
+        }
     });
 }
 
@@ -94,14 +99,27 @@ function call(apiCall, callback) {
 function savePageViews(parsedBody) {
     var newPageViews = [];
 
-    //console.log(parsedBody);
+    parsedBody.forEach(function (pageViewObject, index, iteratingArray) {
+        var currentDate;
+        var forwardDate;
+        var differenceSeconds;
+        if (iteratingArray[index + 1]) {
 
-    parsedBody.forEach(function (pageViewObject) {
+            currentDate = new Date(pageViewObject.created_at);
+            forwardDate = new Date(iteratingArray[index + 1].created_at);
+            differenceSeconds = currentDate - forwardDate;
+            differenceSeconds = differenceSeconds / 1000;
+
+            if (differenceSeconds >= 1800) {
+                differenceSeconds = 1800;
+            }
+        }
+
         var newPageView = {
             student_id: pageViewObject.links.user,
             url: pageViewObject.url,
             timestampAccess: pageViewObject.created_at,
-            timeSpent: pageViewObject.interaction_seconds
+            timeDifference: iteratingArray[index + 1] ? differenceSeconds : 0
         };
 
         newPageViews.push(newPageView);
@@ -116,13 +134,14 @@ function savePageViews(parsedBody) {
  * @param {Array}    arrayOfPageViews The data to be written to CSV
  * @param {Settings} settings           The settings that have information for the filename
  */
-function convertArrayToCsv(arrayOfPageViews, settings) {
+function convertArrayToCsv(arrayOfPageViews) {
     // Format the data into CSV
     var pageViewsCsv = dsv.csvFormat(arrayOfPageViews);
 
     // Write out the CSV file for a certain assignment_id
-    fs.writeFileSync('PageViews for Student' + settings.properties.student_id.default+'.csv', pageViewsCsv);
-    console.log('Wrote Page Views Module');
+    var filename = 'pageViews.csv';
+    fs.writeFileSync(filename, pageViewsCsv);
+    console.log('Wrote ' + filename);
 }
 
 // Export this module

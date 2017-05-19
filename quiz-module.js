@@ -48,7 +48,7 @@ function formatQuizStatistcs(quiz, quizID, output, data) {
 /** Pull out who answerserd which question */
 function formatQuizSubmissions(quiz, quizID, output) {
     //console.log(Array.isArray(quiz.quiz_submissions));
-	quiz.quiz_submissions = quiz.quiz_submissions || []
+    quiz.quiz_submissions = quiz.quiz_submissions || []
     quiz.quiz_submissions.forEach(submission => {
         // Grab stuff from the api's object
         output[quizID][submission.user_id] = output[quizID][submission.user_id] || {}
@@ -120,7 +120,7 @@ function printCSV(data, fileName) {
     headerOrder = headerOrder.concat(questionHeaders)
     // write to our file
     fs.writeFileSync(fileName, dsv.csvFormat(arr, headerOrder))
-    console.log('Wrote Quiz File');
+    console.log('Wrote ' + fileName);
 }
 
 /** Get this thing rolling */

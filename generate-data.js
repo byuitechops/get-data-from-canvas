@@ -37,15 +37,25 @@ function main() {
             // Run the program
             console.log('');
 
-            // Run each module
             var props = result.properties;
-            reviewTimeAndComments(result);
 
-            quizConverter(props.requestToken.default, props.course_id.default, props.requestUrl.default);
+            async.waterfall([
+                function (callback) {
+                    reviewTimeAndComments(result);
+                    callback();
+                },
+                function (callback) {
+                    quizConverter(props.requestToken.default, props.course_id.default, props.requestUrl.default);
+                    callback();
+                },
+                function (callback) {
+                    pageViews(result);
+                    callback();
+                }
+            ], function (err, result) {
+                endProgram();
+            });
 
-            success = pageViews(result);
-
-            endProgram(success);
 
             return;
         } else {
@@ -72,7 +82,8 @@ function loadSettings(callback) {
     console.log('Settings to run conversion program with:');
     console.log('Request Url: ' + settings.properties.requestUrl.default);
     console.log('Course ID: ' + settings.properties.course_id.default);
-    console.log('Student ID: ' + settings.properties.student_id.default);
+    console.log('Start Time For Page Views: ' + settings.properties.start_time.default);
+    console.log('End Time For Page Views: ' + settings.properties.end_time.default);
     console.log('Request Token: ' + settings.properties.requestToken.default);
     console.log('');
 
@@ -116,7 +127,8 @@ function promptSettings(settings, callback) {
         // Save the values that we have set to be the new defaults
         settings.properties.requestUrl.default = response.requestUrl;
         settings.properties.course_id.default = response.course_id;
-        settings.properties.student_id.default = response.student_id;
+        settings.properties.start_time.default = response.start_time;
+        settings.properties.end_time.default = response.end_time;
         settings.properties.requestToken.default = response.requestToken;
 
         callback(null, response, settings);
@@ -168,7 +180,8 @@ function promptStartProgram(settings, callback) {
     console.log('\n');
     console.log('Request Url: ' + settings.properties.requestUrl.default);
     console.log('Course ID: ' + settings.properties.course_id.default);
-    console.log('Student ID: ' + settings.properties.student_id.default);
+    console.log('Start Time For Page Views: ' + settings.properties.start_time.default);
+    console.log('End Time For Page Views: ' + settings.properties.end_time.default);
     console.log('Request Token: ' + settings.properties.requestToken.default);
 
     // Prompt the user
@@ -178,15 +191,7 @@ function promptStartProgram(settings, callback) {
 }
 
 function endProgram(success) {
-    if (success) {
-        console.log('');
-        console.log('Program ended successfully');
-        return;
-    } else {
-        console.log('');
-        console.log('Program ended with errors');
-        return;
-    }
+    console.log('Finished Program...')
 }
 
 // Run Main
