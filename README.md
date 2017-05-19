@@ -36,52 +36,6 @@ Returns an array of submissions, the submission contains the attributes `score`,
 
 ----
 
-### Performance on each Question item
-
-##### *Why:* 
-To see which questions the students struggled with the most
-
-##### *Calls Needed:*
-- [Get all quiz submission questions](https://canvas.instructure.com/doc/api/quiz_submission_questions.html#method.quizzes/quiz_submission_questions.index)
-```
-GET /api/v1/quiz_submissions/:quiz_submission_id/questions
-```
-- [Fetching the latest quiz statistics](https://canvas.instructure.com/doc/api/quiz_statistics.html#method.quizzes/quiz_statistics.index)
-```
-GET /api/v1/courses/:course_id/quizzes/:quiz_id/statistics
-```
-
-##### *Explanation of Calls:*
-The first claims to return the answer the student chose, though it does not. So if that eventually works then great.
-
-The second is better for an evaluation of how all the students preformed on a single question,
-which answer the majority of them chose and such. But it also lists the names of the students who chose each answer, which could 
-theoretically be used to see how a student scored on a single question.
-
-##### *Limitations:*
-- Both **BETA** API
-
-- The first is ***not a working match*** It claims to be able to return the student 
-answers, but returns something else.
-
-##### *CSV Format:*
-|  | Quiz | Question | Percent that chose this |
-| - | - | - | - |
-| Answer | | | | |
-
----
-
-
-### Time spent on each Question item
-
-##### *Why:* 
-For teachers to analyze the difficulty distribution among questions
-
-##### *There is nothing to suggest that they record this data*
-
-
-
-
 
 ## *Content Stats*
 
@@ -186,35 +140,3 @@ After investigating, the Gradebook History method is the best method if you don'
 |  | Student_id | Grader_id | Grader_Name | Timestamp Submitted | Timestamp Graded | 
 | - | - | - | - |
 | Student | | | | | | |
-
-
-
-## *Other*
-
-
-
-
-### Number of logins per day for each student
-
-##### *Why:* 
-Assuming that it is a similar reason to why they want number of page views per day
-
-##### *Calls Needed:*
-- [Query by user](https://canvas.instructure.com/doc/api/authentications_log.html#method.authentication_audit_api.for_user)
-```
-GET /api/v1/audit/authentication/users/:user_id
-```
-
-##### *Explanation of Call:*
-Under the events property is a list of all the times the user has logged in. Which includeds a timestamp, 
-so the number of logins per day can be deduced.
-
-The property named "created_at" is what we're looking for.  This will give us the timestamp.
-
-**[X]Program Written**
-
-##### *CSV Format:*
-
-|  | Number of Logins | 
-| - | - |
-| Day | |
