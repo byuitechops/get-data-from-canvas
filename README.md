@@ -4,7 +4,7 @@
 - OUTPUT: 3 CSV files:
 
 
-1. Student Page Views
+1. Student Page Views (According to start and end time range)
 2. Student Quiz Statistics
 3. Student Quiz Comments and Reviewer turnaround time
 
