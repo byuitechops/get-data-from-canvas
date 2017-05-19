@@ -8,7 +8,7 @@
         "course_id": {
             "description": "Enter Course_Id",
             "type": "string",
-            "default": "14"
+            "default": "15"
         },
         "runWithRange": {
             "description": "Run program with a start and end time range for page views?(yes/no)",

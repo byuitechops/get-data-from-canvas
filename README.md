@@ -30,9 +30,9 @@ Returns an array of submissions, the submission contains the attributes `score`,
 - **BETA** API
 
 ##### *CSV Format:*
-|  | Student | Score | Number of Attempts | Time Spent | Time Submitted
+|  | Student Name | Student ID | Quiz ID | Number of Attempts | Score | Time Started | Time Finished | Time Spent(in seconds) | Question [index] Statistics ...
 | - | - | - | - | - | - |
-| Quiz | | | | | | |
+| Quiz Submission | | | | | | | | | | |
 
 ----
 
@@ -103,13 +103,14 @@ GET /api/v1/users/:user_id/page_views
 
 *Requires Admin Priveliges*
 
-This call will return a list of Page Views. We will be using the `created_at`, `interation_seconds`,
-and `url` attributes to determine the Timestamp, time spent and number of view respectively
+This call will return a list of Page Views. Because this API's `interaction_seconds` property does not work as well as we need it to, we will use the `created_at` attributes of the current and most recent page views to manually calculate the time spent by students on a certain page.
+
+Currently, this API call will only work if it is supplied an Admin Access Token for the specific course you are trying to ask.  For instance, if I have an Admin Access Token for my own course, but I am trying to get page views for another course and do not have sufficient priveliges with my Access Token, it will not work and the page views part of the program will end with errors.
 
 ##### *CSV Format:*
-|  | Student | URL | Number of Visits | Timestamp | Time Spent |
+|  | Student ID | URL | Time Accessed | Time Spent |
 | - | - | - | - | - | - |
-| Visit | | | | | | |
+| Visit | | | | | |
 
 
 
@@ -131,15 +132,15 @@ GET /api/v1/courses/:course_id/assignments/:assignment_id/submissions/:user_id?i
 ```
 
 ##### *Explanation of Call:*
-This GET request returns a submission which contains `submission_comments`.  This attribute contains the comment, timestamp, and author
+This GET request returns a submission which contains `submission_comments`.  This attribute contains the comment, timestamp, and author for each submission.  Our program works so that it returns a list of comments for each submission, seperated by semi-colons (;).
 
 ##### *Limitations:*
 - **BETA** API
 
 ##### *CSV Format:*	
-|  | Assignment ID | Student | Grader | Comment | Timestamp |
+|  | Student ID | Student Name | Assignment ID | Grader ID | Time Submitted | Time Graded | Comments | Time Commented | Commenter
 | - | - | - | - | - | - |
-| Submissions | | | | | | |
+| Assignment Submission | | | | | | | | | | |
 
 ---
 
@@ -196,7 +197,7 @@ After investigating, the Gradebook History method is the best method if you don'
 ### Number of logins per day for each student
 
 ##### *Why:* 
-Assuming that it is a simular reason to why they want number of page views per day
+Assuming that it is a similar reason to why they want number of page views per day
 
 ##### *Calls Needed:*
 - [Query by user](https://canvas.instructure.com/doc/api/authentications_log.html#method.authentication_audit_api.for_user)

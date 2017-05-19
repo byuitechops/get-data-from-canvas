@@ -35,9 +35,10 @@ function main(settings) {
         rangeOptions.start_time = settings.properties.start_time.default;
         rangeOptions.end_time = settings.properties.end_time.default;
     }
-    console.log(rangeOptions);
+    //console.log(rangeOptions);
 
     call(`/api/v1/accounts/self/roles`, {}, function (rolesError, roles) {
+        //console.log(rolesError);
         if (rolesError) {
             if (rolesError === 401) {
                 console.error('Page Views Error Code: ' + rolesError + ': Unauthorized.  Please supply an Admin Access Token');
@@ -46,6 +47,9 @@ function main(settings) {
                 console.error('Page Views Error Code: ' + rolesError);
                 return;
             }
+        } else if (!roles) {
+            console.error('Page Views Error:  Fatal');
+            return;
         } else if (roles[0].role === 'AccountAdmin') {
             call(`courses/${settings.properties.course_id.default}/students`, {}, function (err, students) {
                 // Check for errors
