@@ -48,7 +48,7 @@ function main(settings) {
                 return;
             }
         } else if (!roles) {
-            console.error('Page Views Error:  Fatal');
+            console.error('Page Views Error:  Fatal ' + roles);
             return;
         } else if (roles[0].role === 'AccountAdmin') {
             call(`courses/${settings.properties.course_id.default}/students`, {}, function (err, students) {
@@ -59,7 +59,7 @@ function main(settings) {
                 }
 
                 // Loop through all the students
-                async.mapLimit(students, 30, function (student, callback) {
+                async.mapLimit(students, 10, function (student, callback) {
                     call(`users/${student.id}/page_views`, rangeOptions, function (pageViewError, pageViews) {
                         // Check for errors
                         if (pageViewError) {
@@ -73,7 +73,7 @@ function main(settings) {
                     });
                 }, function (mapError, result) {
                     if (mapError) {
-                        //console.error(mapError);
+                        console.error(mapError);
                         console.error('Arf');
                         return;
                     }
@@ -108,31 +108,33 @@ function call(apiCall, options, callback) {
 function savePageViews(parsedBody) {
     var newPageViews = [];
 
-    parsedBody.forEach(function (pageViewObject, index, iteratingArray) {
-        var currentDate;
-        var forwardDate;
-        var differenceSeconds;
-        if (iteratingArray[index + 1]) {
+    if (parsedBody !== null) {
+        parsedBody.forEach(function (pageViewObject, index, iteratingArray) {
+            var currentDate;
+            var forwardDate;
+            var differenceSeconds;
+            if (iteratingArray[index + 1]) {
 
-            currentDate = new Date(pageViewObject.created_at);
-            forwardDate = new Date(iteratingArray[index + 1].created_at);
-            differenceSeconds = currentDate - forwardDate;
-            differenceSeconds = differenceSeconds / 1000;
+                currentDate = new Date(pageViewObject.created_at);
+                forwardDate = new Date(iteratingArray[index + 1].created_at);
+                differenceSeconds = currentDate - forwardDate;
+                differenceSeconds = differenceSeconds / 1000;
 
-            if (differenceSeconds >= 1800) {
-                differenceSeconds = 1800;
+                if (differenceSeconds >= 1800) {
+                    differenceSeconds = 1800;
+                }
             }
-        }
 
-        var newPageView = {
-            student_id: pageViewObject.links.user,
-            url: pageViewObject.url,
-            timestampAccess: pageViewObject.created_at,
-            timeDifference: iteratingArray[index + 1] ? differenceSeconds : 0
-        };
+            var newPageView = {
+                student_id: pageViewObject.links.user,
+                url: pageViewObject.url,
+                timestampAccess: pageViewObject.created_at,
+                timeDifference: iteratingArray[index + 1] ? differenceSeconds : 0
+            };
 
-        newPageViews.push(newPageView);
-    });
+            newPageViews.push(newPageView);
+        });
+    }
 
     return newPageViews;
 }

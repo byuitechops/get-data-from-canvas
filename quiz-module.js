@@ -22,31 +22,54 @@ function formatQuizStatistcs(quiz, quizID, output, data) {
             // For questions with multiple answers, such as matching
             if (question.answer_sets) {
                 question.answer_sets.forEach(subset => {
-                    subset.answers.forEach(answer => {
+
+                    if (Array.isArray(subset.answers)) {
+                        subset.answers.forEach(answer => {
+                            answer.user_names.forEach(name => {
+                                output[quizID][data.students[name]] = output[quizID][data.students[name]] || {}
+
+                                var student = output[quizID][data.students[name]]
+
+                                console.log(output[quizID][data.students[name]]);
+
+                                //console.log(student);
+                                // Save their name
+                                student["Student Name"] = name
+                                // Save their answer
+                                student[question.label + " " + subset.text] = answer.text
+                                // Save their score if they want that too
+                                student[question.label + " Score"] = student[question.label] || []
+                                student[question.label + " Score"].push(answer.score || +answer.correct)
+
+                            })
+                        })
+                    }
+                })
+            } else if (question.answers) {
+
+                if (Array.isArray(question.answers)) {
+                    question.answers.forEach(answer => {
                         answer.user_names.forEach(name => {
-                            var student = output[quizID][data.students[name]]
+                            //console.log(output);
+                            output[quizID][data.students[name]] = output[quizID][data.students[name]] || {}
+
+                            var student = output[quizID][data.students[name]];
+
+                            console.log(output[quizID][data.students[name]]);
+                            //console.log(student);
+                            if (!student) {
+                                console.log(output[quizID]);
+                            }
+
                             // Save their name
                             student["Student Name"] = name
                             // Save their answer
-                            student[question.label + " " + subset.text] = answer.text
+                            student[question.label] = answer.text
                             // Save their score if they want that too
-                            student[question.label + " Score"] = student[question.label] || []
-                            student[question.label + " Score"].push(answer.score || +answer.correct)
+                            student[question.label + " Score"] = answer.score || +answer.correct
                         })
                     })
-                })
-            } else if (question.answers) {
-                question.answers.forEach(answer => {
-                    answer.user_names.forEach(name => {
-                        var student = output[quizID][data.students[name]]
-                        // Save their name
-                        student["Student Name"] = name
-                        // Save their answer
-                        student[question.label] = answer.text
-                        // Save their score if they want that too
-                        student[question.label + " Score"] = answer.score || +answer.correct
-                    })
-                })
+                }
             }
         })
     })
@@ -138,6 +161,7 @@ module.exports = function main(accessToken, course_id, domain) {
     canvas.call(`courses/${courseID}/students`)
         .then(value => {
             data.students = value;
+            //console.log(data);
             return data;
         })
         .then(formatStudents)

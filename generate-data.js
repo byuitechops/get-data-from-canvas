@@ -51,11 +51,9 @@ function main() {
                 function (callback) {
                     pageViews(result);
                     callback();
-                }
-            ], function (err, result) {
+                 }], function (err, result) {
                 endProgram();
             });
-
 
             return;
         } else {
