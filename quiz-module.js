@@ -30,9 +30,6 @@ function formatQuizStatistcs(quiz, quizID, output, data) {
 
                                 var student = output[quizID][data.students[name]]
 
-                                console.log(output[quizID][data.students[name]]);
-
-                                //console.log(student);
                                 // Save their name
                                 student["Student Name"] = name
                                 // Save their answer
@@ -54,12 +51,6 @@ function formatQuizStatistcs(quiz, quizID, output, data) {
                             output[quizID][data.students[name]] = output[quizID][data.students[name]] || {}
 
                             var student = output[quizID][data.students[name]];
-
-                            console.log(output[quizID][data.students[name]]);
-                            //console.log(student);
-                            if (!student) {
-                                console.log(output[quizID]);
-                            }
 
                             // Save their name
                             student["Student Name"] = name

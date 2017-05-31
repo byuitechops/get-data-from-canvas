@@ -1,5 +1,5 @@
 *.csv
 *.txt
 settings.json
-node_modules/*
+node_modules/
 *.html
