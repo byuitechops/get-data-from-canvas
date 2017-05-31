@@ -26,11 +26,14 @@
     "HTTPS",
     "GET",
     "Canvas"
-  ],
-    "author": "Ben Earl and Scott Nicholes",
-    "license": "MIT",
+    ],
     "bugs": {
         "url": "https://github.com/byuitechops/get-data-from-canvas/issues"
     },
-    "homepage": "https://github.com/byuitechops/get-data-from-canvas#readme"
+    "homepage": "https://github.com/byuitechops/get-data-from-canvas#readme",
+    "author": "Benjamin Earl",
+    "contributors": [{
+      "name": "Scott Nicholes"
+    }],
+    "license": "MIT",
 }
