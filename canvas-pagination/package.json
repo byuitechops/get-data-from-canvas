@@ -1,0 +1,27 @@
+{
+  "name": "canvas-pagination",
+  "version": "1.0.0",
+  "description": "Module that returns all the pages for any Canvas API Call",
+  "main": "canvas-pagination.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/byuitechops/canvas-pagination.git"
+  },
+  "bugs": {
+    "url": "https://github.com/byuitechops/canvas-pagination/issues"
+  },
+  "homepage": "https://github.com/byuitechops/canvas-pagination#readme",
+  "dependencies": {
+    "async": "^2.4.0",
+    "chalk": "^1.1.3",
+    "request": "^2.81.0"
+  },
+  "devDependencies": {
+    "d3-dsv": "^1.0.5"
+  },
+  "author": "Joshua McKinney",
+  "license": "MIT"
+}

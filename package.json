@@ -33,7 +33,7 @@
     "homepage": "https://github.com/byuitechops/get-data-from-canvas#readme",
     "author": "Benjamin Earl",
     "contributors": [{
-      "name": "Scott Nicholes"
+        "name": "Scott Nicholes"
     }],
-    "license": "MIT",
+    "license": "MIT"
 }
