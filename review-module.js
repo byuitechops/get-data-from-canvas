@@ -22,8 +22,6 @@ var paginator = require('./canvas-pagination');
 var Canvas = require('canvas-api-wrapper');
 var canvas;
 
-var limit = 5;
-
 
 /**
  * The main driving function of the program.  This is the 
@@ -34,63 +32,19 @@ var limit = 5;
  * @author Scott Nicholes                           
  */
 function main(settings) {
-    // BEGIN EXPERIMENT
-    var expurl = `/api/v1/courses/${settings.properties.course_id.default}/students/submissions/`;
-    //?student_ids[]=all&include[]=user&include[]=submission_comments&include[]=assignment&access_token=${settings.properties.requestToken.default}`
+    // This is the apiCall we'll use to get all the quiz submissions
+    var apiCall = `/api/v1/courses/${settings.properties.course_id.default}/students/submissions/`;
 
-    /*paginator(`https://${settings.properties.requestUrl.default}.instructure.com`, expurl, `student_ids[]=all&include[]=user&include[]=submission_comments&include[]=assignment&access_token=${settings.properties.requestToken.default}`, function (error, data) {
-        var exparrayOfSubmissions = saveSubmissions(data);
-        convertArrayToCsv(exparrayOfSubmissions);
-    })*/
-
-    paginator(`https://${settings.properties.requestUrl.default}.instructure.com`, expurl, {
+    // Paginator will take the base url, apiCall, and a queryObject and then handle the pagination of all the submissions
+    paginator(`https://${settings.properties.requestUrl.default}.instructure.com`, apiCall, {
         "student_ids[]": ["all"],
         "include[]": ["submission_comments", "assignment", "user"],
         access_token: settings.properties.requestToken.default
     }, function (error, data) {
         //console.log(data);
-        var exparrayOfSubmissions = saveSubmissions(data);
-        convertArrayToCsv(exparrayOfSubmissions);
-    })
-
-    // END EXPERIMENT
-
-
-    // Generate the url to GET request with
-    /*var requestUrl = generateUrl(settings);
-
-    // Perform the GET request and generate CSV file
-    request.get(requestUrl, function (error, response, body) {
-        if (error) {
-            console.error(error);
-        }
-
-        var arrayOfSubmissions = saveSubmissions(body);
+        var arrayOfSubmissions = saveSubmissions(data);
         convertArrayToCsv(arrayOfSubmissions);
-
-        console.log('');
-    });*/
-}
-
-/**
- * This function generates the appropriate GET request URL,
- * based upon the settings.
- * 
- * @param   {object} settings The object that has the components needed to generate a request URL.
- * @returns {String}   The request URL.
- *                     
- * @author Scott Nicholes                    
- */
-function generateUrl(settings) {
-    // Core URL to get a Submission Object
-    var props = settings.properties
-    var url = `
-            https: //${props.requestUrl.default}.instructure.com/api/v1/courses/${props.course_id.default}
-            /students/submissions / ? student_ids[] = all & include[] = user & include[] = submission_comments & include[] = assignment & access_token = $ {
-                props.requestToken.default
-            }
-            `;
-    return url;
+    });
 }
 
 /**
@@ -102,8 +56,6 @@ function generateUrl(settings) {
  */
 function saveSubmissions(body) {
     var newSubmissions = [];
-
-    //var parsedBody = JSON.parse(body);
 
     body.forEach(function (submission) {
         var newSubmissionObject = {

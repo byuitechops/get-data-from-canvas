@@ -68,19 +68,35 @@ function formatQuizStatistcs(quiz, quizID, output, data) {
 
 /** Pull out who answerserd which question */
 function formatQuizSubmissions(quiz, quizID, output) {
-    //console.log(Array.isArray(quiz.quiz_submissions));
-    quiz.quiz_submissions = quiz.quiz_submissions || []
-    quiz.quiz_submissions.forEach(submission => {
-        // Grab stuff from the api's object
-        output[quizID][submission.user_id] = output[quizID][submission.user_id] || {}
-        output[quizID][submission.user_id].Attempts = submission.attempt
-        output[quizID][submission.user_id].Score = submission.kept_score
-        output[quizID][submission.user_id]["Duration In Seconds"] = submission.time_spent
-        output[quizID][submission.user_id].Finished = new Date(submission.finished_at)
-        output[quizID][submission.user_id].Started = new Date(submission.started_at)
-        output[quizID][submission.user_id].Quiz = quizID
-    })
+    // At this point, outut has nothing in it for this quizId
 
+
+    if (quiz.quiz_submissions) {
+        quiz.quiz_submissions = quiz.quiz_submissions || []
+        quiz.quiz_submissions.forEach(submission => {
+            // Grab stuff from the api's object
+            output[quizID][submission.user_id] = output[quizID][submission.user_id] || {}
+            output[quizID][submission.user_id].Attempts = submission.attempt
+            output[quizID][submission.user_id].Score = submission.kept_score
+            output[quizID][submission.user_id]["Duration In Seconds"] = submission.time_spent
+            output[quizID][submission.user_id].Finished = new Date(submission.finished_at)
+            output[quizID][submission.user_id].Started = new Date(submission.started_at)
+            output[quizID][submission.user_id].Quiz = quizID
+        })
+    } else {
+        // There is no quiz_submissions property, but there is still data
+        quiz.forEach(function (submission) {
+            output[quizID][submission.user_id] = output[quizID][submission.user_id] || {}
+            output[quizID][submission.user_id].Attempts = submission.attempt
+            output[quizID][submission.user_id].Score = submission.kept_score
+            output[quizID][submission.user_id]["Duration In Seconds"] = submission.time_spent
+            output[quizID][submission.user_id].Finished = new Date(submission.finished_at)
+            output[quizID][submission.user_id].Started = new Date(submission.started_at)
+            output[quizID][submission.user_id].Quiz = quizID
+        });
+    }
+
+    //console.log(output[quizID]);
 }
 
 /** Run the stuff on each quiz */
@@ -89,10 +105,15 @@ function forEachQuiz(data, canvas) {
         var output = {}
         // Only do 20 quizzes at a time, to try not overload the server
         eachLimit(data.quizzes, 20, (quiz, callback) => {
+            //console.log(quiz);
             output[quiz.id] = {}
             // calling my other functions to read and format data
             canvas.call(`courses/${courseID}/quizzes/${quiz.id}/submissions`)
-                .then(stats => formatQuizSubmissions(stats, quiz.id, output))
+                .then(function (stats) {
+                    //console.log(stats);
+                    //console.log(quiz.id);
+                    formatQuizSubmissions(stats, quiz.id, output)
+                })
                 .then(canvas.wrapCall(`courses/${courseID}/quizzes/${quiz.id}/statistics`))
                 .then(stats => formatQuizStatistcs(stats, quiz.id, output, data))
                 .then(callback)
@@ -156,9 +177,10 @@ module.exports = function main(accessToken, course_id, domain) {
             return data;
         })
         .then(formatStudents)
-        .then(canvas.wrapCall(`courses/${courseID}/quizzes`))
+        .then(canvas.wrapCall(`courses/${courseID}/quizzes`), {})
         .then(value => {
             data.quizzes = value;
+            //console.log(data);
             return data;
         })
         .then(data => forEachQuiz(data, canvas))
