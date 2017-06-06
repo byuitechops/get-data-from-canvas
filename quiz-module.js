@@ -14,11 +14,21 @@ var Canvas = require('canvas-api-wrapper') //("10706~GRQRqCiCKrW3JM2SvJvoJSuBk4A
 var courseID; // = 14
 
 
-/** Pull out who answerserd which question */
+/**
+ * This function will pull out who answerserd which question
+ * @param {object} quiz   A single quiz object that has statistics in it
+ * @param {number} quizID The quiz id number
+ * @param {object} output The output object that organizes our data
+ * @param {object} data   An object that has our Student Name to Id mapped data
+ */
 function formatQuizStatistcs(quiz, quizID, output, data) {
+    // Iterate through each of the Quiz Statistics
     quiz.quiz_statistics.forEach(stats => {
+        // Iterate through each of the question statistics
         stats.question_statistics.forEach(question => {
+            // Formats the question in relation to its place in the quiz
             question.label = "Question " + question.position
+
             // For questions with multiple answers, such as matching
             if (question.answer_sets) {
                 question.answer_sets.forEach(subset => {
@@ -43,11 +53,10 @@ function formatQuizStatistcs(quiz, quizID, output, data) {
                     }
                 })
             } else if (question.answers) {
-
+                // For questions that just have the answers appended onto them.  (They don't have multiple answers)
                 if (Array.isArray(question.answers)) {
                     question.answers.forEach(answer => {
                         answer.user_names.forEach(name => {
-                            //console.log(output);
                             output[quizID][data.students[name]] = output[quizID][data.students[name]] || {}
 
                             var student = output[quizID][data.students[name]];
@@ -66,13 +75,18 @@ function formatQuizStatistcs(quiz, quizID, output, data) {
     })
 }
 
-/** Pull out who answerserd which question */
+/**
+ * This function will pull out who answerserd which question
+ * 
+ * @param {object} quiz   A single quiz object
+ * @param {number} quizID The quiz id number
+ * @param {object} output The output object that organizes our data
+ */
 function formatQuizSubmissions(quiz, quizID, output) {
-    // At this point, outut has nothing in it for this quizId
-
-
+    // IF each quiz has a quiz submissions property
     if (quiz.quiz_submissions) {
         quiz.quiz_submissions = quiz.quiz_submissions || []
+        //var quizName = quiz.quizzes[0].title;
         quiz.quiz_submissions.forEach(submission => {
             // Grab stuff from the api's object
             output[quizID][submission.user_id] = output[quizID][submission.user_id] || {}
@@ -81,10 +95,13 @@ function formatQuizSubmissions(quiz, quizID, output) {
             output[quizID][submission.user_id]["Duration In Seconds"] = submission.time_spent
             output[quizID][submission.user_id].Finished = new Date(submission.finished_at)
             output[quizID][submission.user_id].Started = new Date(submission.started_at)
-            output[quizID][submission.user_id].Quiz = quizID
+            output[quizID][submission.user_id].QuizID = quizID
+            // Commenting out because it messes up formatting
+            //output[quizID][submission.user_id].QuizName = quizName
         })
     } else {
         // There is no quiz_submissions property, but there is still data
+        // NOTE: This is probably because of the API we're using being in BETA
         quiz.forEach(function (submission) {
             output[quizID][submission.user_id] = output[quizID][submission.user_id] || {}
             output[quizID][submission.user_id].Attempts = submission.attempt
@@ -92,7 +109,7 @@ function formatQuizSubmissions(quiz, quizID, output) {
             output[quizID][submission.user_id]["Duration In Seconds"] = submission.time_spent
             output[quizID][submission.user_id].Finished = new Date(submission.finished_at)
             output[quizID][submission.user_id].Started = new Date(submission.started_at)
-            output[quizID][submission.user_id].Quiz = quizID
+            output[quizID][submission.user_id].QuizID = quizID
         });
     }
 }
@@ -118,7 +135,11 @@ function forEachQuiz(data, canvas) {
             // Each quiz ID shall have an object on it that will have the submission and statistical data
             output[quiz.id] = {}
             // calling my other functions to read and format data
-            canvas.call(`courses/${courseID}/quizzes/${quiz.id}/submissions`)
+            canvas.call(`courses/${courseID}/quizzes/${quiz.id}/submissions`
+                    /*, {
+                                        "include[]": "quiz"
+                                    }*/
+                )
                 .then(function (stats) {
                     formatQuizSubmissions(stats, quiz.id, output)
                 })
@@ -156,7 +177,7 @@ function printCSV(data, fileName) {
         }
     }
     // This is to prevent the headers coming out in alphabetical order
-    var headerOrder = ['Student Name', 'Student ID', 'Quiz', 'Attempts', 'Score', 'Started', 'Finished', 'Duration In Seconds']
+    var headerOrder = ['Student Name', 'Student ID', 'QuizID', 'Attempts', 'Score', 'Started', 'Finished', 'Duration In Seconds']
     // What is this list missing?
     var questionHeaders = Object.keys(arr.reduce((a, b) => Object.assign({}, a, b))).filter(n => headerOrder.indexOf(n) < 0)
 
