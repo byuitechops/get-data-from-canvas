@@ -95,23 +95,31 @@ function formatQuizSubmissions(quiz, quizID, output) {
             output[quizID][submission.user_id].Quiz = quizID
         });
     }
-
-    //console.log(output[quizID]);
 }
 
-/** Run the stuff on each quiz */
+/**
+ * Run the various API Calls on each quiz found in our data object
+ * 
+ * @param   {object}   data   The mapped Object in the format '<StudentName>': <StudentID>
+ * @param   {function} canvas The Canvas Instance with which we will make our API Calls
+ * @returns {object}   The Output Object ready to be converted to CSV
+ *                     
+ * @author Ben Earl
+ * @lastmodifiedBy Scott Nicholes
+ */
 function forEachQuiz(data, canvas) {
     return new Promise((resolve, reject) => {
+        // This object will serve as our output data to be converted to CSV
         var output = {}
+
+        // For Each quiz, get the submissions and statistics
         // Only do 20 quizzes at a time, to try not overload the server
         eachLimit(data.quizzes, 20, (quiz, callback) => {
-            //console.log(quiz);
+            // Each quiz ID shall have an object on it that will have the submission and statistical data
             output[quiz.id] = {}
             // calling my other functions to read and format data
             canvas.call(`courses/${courseID}/quizzes/${quiz.id}/submissions`)
                 .then(function (stats) {
-                    //console.log(stats);
-                    //console.log(quiz.id);
                     formatQuizSubmissions(stats, quiz.id, output)
                 })
                 .then(canvas.wrapCall(`courses/${courseID}/quizzes/${quiz.id}/statistics`))
@@ -123,7 +131,11 @@ function forEachQuiz(data, canvas) {
     })
 }
 
-/** Turn the object into a map of name to ID */
+/**
+ * Turn the data object into a map that maps the student name to its ID.
+ * @param   {object} data The data object that will organize our GET request data
+ * @returns {object} The completed Mapped Object
+ */
 function formatStudents(data) {
     // all I need is a map from their name to their ID
     data.students = data.students.reduce((obj, student) => {
@@ -165,15 +177,31 @@ function printCSV(data, fileName) {
     console.log('Wrote ' + fileName);
 }
 
-/** Get this thing rolling */
+/**
+ * This program will call various API calls in order to compile a final Quiz CSV file.
+ * 
+ * @param   {String}   accessToken The access token that we will use to access Canvas
+ * @param   {String}   course_id   The strung number that represents the course's quizzes
+ * @param   {String}   domain      The domain name (ex: byui) of the Canvas domain
+ * 
+ * @author Ben Earl
+ * @lastmodifiedBy Scott Nicholes
+ */
 module.exports = function main(accessToken, course_id, domain) {
+    // The object that we will use to organize the data we receive
     var data = {}
     courseID = course_id
+
+    // Create the Canvas API Wrapper instance
     var canvas = Canvas(accessToken, domain);
+
+    // Begin Promise Chain.  We will first get the list of student objects
     canvas.call(`courses/${courseID}/students`)
         .then(value => {
+            // Value is the list of student objects
             data.students = value;
-            //console.log(data);
+
+            // Pass the data object on to the next Promise statement
             return data;
         })
         .then(formatStudents)

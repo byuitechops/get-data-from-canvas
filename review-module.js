@@ -41,7 +41,7 @@ function main(settings) {
         "include[]": ["submission_comments", "assignment", "user"],
         access_token: settings.properties.requestToken.default
     }, function (error, data) {
-        //console.log(data);
+        // Now we have all the paginated data
         var arrayOfSubmissions = saveSubmissions(data);
         convertArrayToCsv(arrayOfSubmissions);
     });
@@ -51,7 +51,7 @@ function main(settings) {
  * Generate new Submission Objects of the kind of data we are looking for.
  * Save these data items into an array.
  * 
- * @param   {String} body Body response from the http GET request.
+ * @param   {String} body Paginated, JSON Parsed object
  * @returns {Array}  An array of newSubmissions Objects that will be converted into CSVs.
  */
 function saveSubmissions(body) {
