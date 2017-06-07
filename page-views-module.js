@@ -20,6 +20,7 @@ var paginator = require('canvas-pagination');
 var Canvas = require('canvas-api-wrapper');
 var canvas;
 
+
 /**
  * The main driving function of the program.  This is the 
  * function that will be exported, comprising the module.
@@ -28,7 +29,11 @@ var canvas;
  *                       
  * @author Scott Nicholes                           
  */
-function main(settings) {
+function main(settings, returnCallback) {
+    function errorHandler(error) {
+        returnCallback(error, null);
+    }
+
     canvas = new Canvas(settings.properties.requestToken.default, settings.properties.requestUrl.default);
 
     var rangeOptions = {};
@@ -45,14 +50,13 @@ function main(settings) {
         //console.log(rolesError);
         if (rolesError) {
             if (rolesError === 401) {
-                console.error('Page Views Error Code: ' + rolesError + ': Unauthorized.  Please supply an Admin Access Token');
-                return;
+                errorHandler('Code: ' + rolesError + ': Unauthorized.  Please supply an Admin Access Token');
             } else {
-                console.error('Page Views Error Code: ' + rolesError);
-                return;
+                errorHandler('Code: ' + rolesError);
             }
+            return;
         } else if (!roles) {
-            console.error('Page Views Error:  Fatal ' + roles);
+            errorHandler('Fatal: ' + roles);
             return;
         } else if (roles[0].role === 'AccountAdmin') {
             // We now know that we have an Admin token
@@ -61,7 +65,7 @@ function main(settings) {
             call(`courses/${settings.properties.course_id.default}/students`, {}, function (err, students) {
                 // Check for errors
                 if (err) {
-                    console.error(err);
+                    errorHandler(err);
                     return;
                 }
 
@@ -89,7 +93,6 @@ function main(settings) {
                         call(`users/${student.id}/page_views`, rangeOptions, function (pageViewError, pageViews) {
                             // Check for errors
                             if (pageViewError) {
-                                console.log(pageViewError);
                                 callback(pageViewError, null);
                             } else {
                                 var newPageViews = savePageViews(pageViews);
@@ -99,14 +102,15 @@ function main(settings) {
                     },
                     function (mapError, result) {
                         if (mapError) {
-                            console.error(mapError);
+                            errorHandler(mapError);
                             return;
                         }
                         var pageViewsOut = result.reduce(function (accum, currentValue) {
                             return accum.concat(currentValue);
                         }, []);
 
-                        convertArrayToCsv(pageViewsOut);
+                        returnCallback(null, pageViewsOut);
+                        //convertArrayToCsv(pageViewsOut);
                     });
             });
         }

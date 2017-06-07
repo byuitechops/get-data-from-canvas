@@ -26,6 +26,8 @@ function main() {
     console.log('Welcome to the program!');
     console.log('----------------------------------------');
 
+    var convertedCommentsArray;
+
     // Perform Waterfall Chain of Async operations
     async.waterfall([
     loadSettings,
@@ -33,35 +35,71 @@ function main() {
     saveSettings,
     promptStartProgram
   ], function (error, result, response) {
-        if (response === 'yes' || error === 'run_with_no_changes') {
-            // Run the program
-            console.log('');
-
-            var props = result.properties;
-
-            async.waterfall([
-                function (callback) {
-                    reviewTimeAndComments(result);
-                    callback();
-                },
-                function (callback) {
-                    quizConverter(props.requestToken.default, props.course_id.default, props.requestUrl.default);
-                    callback();
-                },
-                function (callback) {
-                    pageViews(result);
-                    callback();
-                }], function (err, result) {
-                endProgram();
-            });
-
-            return;
-        } else {
-            console.log('Ending Program...');
-
+        if (error || response !== 'yes') {
+            endProgram();
             return;
         }
+
+        // Run the program
+        console.log('');
+
+        var props = result.properties;
+
+        async.waterfall([
+                function (callback) {
+                    reviewTimeAndComments(result, function (error, data) {
+                        callback(null, [generateArrayEntry('reviewTimesAndComments.csv', data)])
+                    });
+                },
+                function (accumArray, callback) {
+                    quizConverter(props.requestToken.default, props.course_id.default, props.requestUrl.default, function (error, data) {
+                        accumArray.push(generateArrayEntry('quizzes.csv', data))
+                        callback(null, accumArray);
+                    });
+                },
+                function (accumArray, callback) {
+                    pageViews(result, function (error, data) {
+                        if (error) {
+                            callback(error, null);
+                            return;
+                        }
+
+                        accumArray.push(generateArrayEntry('pageViews.csv', data));
+                        callback(null, accumArray);
+                    });
+                },
+                function (accumArray, callback) {
+                    accumArray.forEach(function convertArrayToCsv(arrayEntry) {
+                        // Format the data into CSVs
+                        var outputCsv = dsv.csvFormat(arrayEntry.data);
+
+                        // Write out the CSV files
+                        var filename = arrayEntry.fileName;
+                        try {
+                            fs.writeFileSync(filename, outputCsv);
+                            console.log('Wrote ' + filename);
+                        } catch (e) {
+                            callback(e, null);
+                        }
+                    });
+                    callback(null);
+                    }],
+            function (error) {
+                if (error) {
+                    console.error(error);
+                }
+
+            });
+
+        return;
     });
+}
+
+function generateArrayEntry(filename, data) {
+    return {
+        fileName: filename,
+        data: data
+    }
 }
 
 /**
@@ -200,7 +238,7 @@ function promptStartProgram(settings, callback) {
 }
 
 function endProgram(success) {
-    console.log('Finished Program...')
+    console.log('Finished Program');
 }
 
 // Run Main

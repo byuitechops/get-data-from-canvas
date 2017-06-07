@@ -227,7 +227,7 @@ function printCSV(data, fileName) {
  * @author Ben Earl
  * @lastmodifiedBy Scott Nicholes
  */
-module.exports = function main(accessToken, course_id, domain) {
+module.exports = function main(accessToken, course_id, domain, callback) {
     // The object that we will use to organize the data we receive
     var data = {}
     courseID = course_id
@@ -252,6 +252,11 @@ module.exports = function main(accessToken, course_id, domain) {
             return data;
         })
         .then(data => forEachQuiz(data, canvas))
-        .then(output => printCSV(output, 'quizzes.csv'))
-        .catch(console.error)
+        .then(function (output) {
+            callback(null, output);
+        })
+        //        .then(output => printCSV(output, 'quizzes.csv'))
+        .catch(function (error) {
+            callback(error, null);
+        });
 }

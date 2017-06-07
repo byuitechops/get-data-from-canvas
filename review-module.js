@@ -31,7 +31,7 @@ var canvas;
  *                            
  * @author Scott Nicholes                           
  */
-function main(settings) {
+function main(settings, callback) {
     // This is the apiCall we'll use to get all the quiz submissions
     var apiCall = `/api/v1/courses/${settings.properties.course_id.default}/students/submissions/`;
 
@@ -41,9 +41,14 @@ function main(settings) {
         "include[]": ["submission_comments", "assignment", "user"],
         access_token: settings.properties.requestToken.default
     }, function (error, data) {
+        if (error) {
+            callback(error, null);
+        }
+
         // Now we have all the paginated data
         var arrayOfSubmissions = saveSubmissions(data);
-        convertArrayToCsv(arrayOfSubmissions);
+        //convertArrayToCsv(arrayOfSubmissions);
+        callback(null, arrayOfSubmissions);
     });
 }
 
