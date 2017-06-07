@@ -4,14 +4,15 @@
  * get the quiz statistics needed for each question.
  * 
  * Author: Ben Earl
+ * Contributer: Scott Nicholes
  *******************************************************/
 var request = require('request')
 var dsv = require('d3-dsv')
 var fs = require('fs')
 var qs = require('qs')
 var eachLimit = require('async/eachLimit')
-var Canvas = require('canvas-api-wrapper') //("10706~GRQRqCiCKrW3JM2SvJvoJSuBk4A2pRMMXdi74bUYiHJfv9L0IE1MGdtQWiQyHrlY")
-var courseID; // = 14
+var Canvas = require('canvas-api-wrapper')
+var courseID;
 
 
 /**
@@ -20,6 +21,9 @@ var courseID; // = 14
  * @param {number} quizID The quiz id number
  * @param {object} output The output object that organizes our data
  * @param {object} data   An object that has our Student Name to Id mapped data
+ *                        
+ * @author Ben Earl
+ * @lastmodifiedBy Scott Nicholes        
  */
 function formatQuizStatistcs(quiz, quizID, output, data) {
     // Iterate through each of the Quiz Statistics
@@ -81,6 +85,9 @@ function formatQuizStatistcs(quiz, quizID, output, data) {
  * @param {object} quiz   A single quiz object
  * @param {number} quizID The quiz id number
  * @param {object} output The output object that organizes our data
+ *                        
+ * @author Ben Earl
+ * @lastmodifiedBy Scott Nicholes        
  */
 function formatQuizSubmissions(quiz, quizID, output) {
     // IF each quiz has a quiz submissions property
@@ -136,7 +143,9 @@ function forEachQuiz(data, canvas) {
             output[quiz.id] = {}
             // calling my other functions to read and format data
             canvas.call(`courses/${courseID}/quizzes/${quiz.id}/submissions`
-                    /*, {
+                    /*Include this options parameter to canvas.call to get Quiz information, such as the quiz name.  BETA API
+                    so it does not work correctly as of 7 June, 2017
+                    , {
                                         "include[]": "quiz"
                                     }*/
                 )
@@ -154,8 +163,11 @@ function forEachQuiz(data, canvas) {
 
 /**
  * Turn the data object into a map that maps the student name to its ID.
+ * 
  * @param   {object} data The data object that will organize our GET request data
  * @returns {object} The completed Mapped Object
+ *                   
+ * @author Ben Earl                  
  */
 function formatStudents(data) {
     // all I need is a map from their name to their ID
@@ -165,7 +177,14 @@ function formatStudents(data) {
     }, {})
 }
 
-/** Some final formatting, then save the csv file out */
+/**
+ * This function performs some final formatting, then saves the csv file.
+ * 
+ * @param {object} data     The final object, ready to be output
+ * @param {string} fileName The name of the file we will save to
+ *                          
+ * @author Ben Earl                         
+ */
 function printCSV(data, fileName) {
     // Reformat my objects into the array that d3-dsv expects
     var arr = []
