@@ -18,7 +18,7 @@ var request = require('request'); // For various https requests
 var fs = require('fs'); // For fs file-system module
 var dsv = require('d3-dsv'); // For d3-dsv csv conversion node
 var async = require('async');
-var paginator = require('./canvas-pagination');
+var paginator = require('canvas-pagination');
 var Canvas = require('canvas-api-wrapper');
 var canvas;
 
@@ -51,13 +51,15 @@ function main(settings) {
  * Generate new Submission Objects of the kind of data we are looking for.
  * Save these data items into an array.
  * 
- * @param   {String} body Paginated, JSON Parsed object
+ * @param   {String} submissions Paginated, JSON Parsed object
  * @returns {Array}  An array of newSubmissions Objects that will be converted into CSVs.
+ *                   
+ * @author Scott Nicholes                  
  */
-function saveSubmissions(body) {
+function saveSubmissions(submissions) {
     var newSubmissions = [];
 
-    body.forEach(function (submission) {
+    submissions.forEach(function (submission) {
         var newSubmissionObject = {
             student_id: submission.user.id,
             student_name: submission.user.name,

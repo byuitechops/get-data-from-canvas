@@ -16,15 +16,16 @@ var fs = require('fs'); // For fs file-system module
 var dsv = require('d3-dsv'); // For d3-dsv csv conversion node
 var qs = require('qs');
 var async = require('async');
-var Canvas = require('canvas-api-wrapper')
+var paginator = require('canvas-pagination');
+var Canvas = require('canvas-api-wrapper');
 var canvas;
 
 /**
  * The main driving function of the program.  This is the 
  * function that will be exported, comprising the module.
  * 
- * @param {Settings} settings The settings to run the program with.
- *                            
+ * @param {object} settings The settings to run the program with.
+ *                       
  * @author Scott Nicholes                           
  */
 function main(settings) {
@@ -35,8 +36,11 @@ function main(settings) {
         rangeOptions.start_time = settings.properties.start_time.default;
         rangeOptions.end_time = settings.properties.end_time.default;
     }
-    //console.log(rangeOptions);
 
+    // Uncomment for Experimental code (see below)
+    //rangeOptions.access_token = settings.properties.requestToken.default;
+
+    // First, we perform an Admin only API call to see if the token is Admin
     call(`/api/v1/accounts/self/roles`, {}, function (rolesError, roles) {
         //console.log(rolesError);
         if (rolesError) {
@@ -51,6 +55,9 @@ function main(settings) {
             console.error('Page Views Error:  Fatal ' + roles);
             return;
         } else if (roles[0].role === 'AccountAdmin') {
+            // We now know that we have an Admin token
+
+            // Get all the student ids for the course we are looking at
             call(`courses/${settings.properties.course_id.default}/students`, {}, function (err, students) {
                 // Check for errors
                 if (err) {
@@ -58,38 +65,63 @@ function main(settings) {
                     return;
                 }
 
-                // Loop through all the students
+                // Loop through all the student objects
                 async.mapLimit(students, 10, function (student, callback) {
-                    call(`users/${student.id}/page_views`, rangeOptions, function (pageViewError, pageViews) {
-                        // Check for errors
-                        if (pageViewError) {
-                            console.log(pageViewError);
-                            callback(pageViewError, null);
-                            //return;
-                        } else {
-                            var newPageViews = savePageViews(pageViews);
-                            callback(null, newPageViews);
+                        /*
+                        Reason this code does not work (Updated 7 June, 2017):
+                        Because in canvas-pagination/canvas-pagination.js, the program realizes that we need to get
+                        each page one by one.  The function at the bottom of the program in canvas-pagination.js that would
+                        grab each page one by one (oneByOne()) is not defined yet.
+                        // BEGIN EXPERIMENT
+                        var apiCall = `/api/v1/users/${student.id}/page_views`;
+                        paginator(`https://${settings.properties.requestUrl.default}.instructure.com`, apiCall, rangeOptions, function (error, exppageViews) {
+                            if (error) {
+                                console.error('There was a page_views reading error: ' + error);
+                                callback(error, null);
+                            } else {
+                                var newPageViews = savePageViews(exppageViews);
+                                callback(null, newPageViews);
+                            }
+                        });
+                        // END EXPERIMENT*/
+
+                        // Get the page views for each student
+                        call(`users/${student.id}/page_views`, rangeOptions, function (pageViewError, pageViews) {
+                            // Check for errors
+                            if (pageViewError) {
+                                console.log(pageViewError);
+                                callback(pageViewError, null);
+                            } else {
+                                var newPageViews = savePageViews(pageViews);
+                                callback(null, newPageViews);
+                            }
+                        });
+                    },
+                    function (mapError, result) {
+                        if (mapError) {
+                            console.error(mapError);
+                            return;
                         }
+                        var pageViewsOut = result.reduce(function (accum, currentValue) {
+                            return accum.concat(currentValue);
+                        }, []);
+
+                        convertArrayToCsv(pageViewsOut);
                     });
-                }, function (mapError, result) {
-                    if (mapError) {
-                        console.error(mapError);
-                        console.error('Arf');
-                        return;
-                    }
-                    var pageViewsOut = result.reduce(function (accum, currentValue) {
-                        return accum.concat(currentValue);
-                    }, []);
-
-                    convertArrayToCsv(pageViewsOut);
-                });
             });
-
-            return;
         }
     });
 }
 
+/**
+ * This is a wrapper function that will call the call function in the canvas-wrapper-api program
+ * 
+ * @param {string}   apiCall  The API call that we want to perform
+ * @param {object}   options  A query string object that defines the options to append to the API call
+ * @param {function} callback A callback function that allows us to pass data out of this ASYNC operation
+ *                            
+ * @author Ben Earl                           
+ */
 function call(apiCall, options, callback) {
     canvas.call(apiCall, options).then(function (data) {
         callback(null, data);
@@ -104,17 +136,18 @@ function call(apiCall, options, callback) {
  * 
  * @param   {String} body Body response from the http GET request.
  * @returns {Array}  An array of newPageViews Objects that will be converted into CSVs.
+ *                   
+ * @author Scott Nicholes                  
  */
-function savePageViews(parsedBody) {
-    var newPageViews = [];
+function savePageViews(pageViews) {
+    var formattedPageViews = [];
 
-    if (parsedBody !== null) {
-        parsedBody.forEach(function (pageViewObject, index, iteratingArray) {
+    if (pageViews !== null) {
+        pageViews.forEach(function (pageViewObject, index, iteratingArray) {
             var currentDate;
             var forwardDate;
             var differenceSeconds;
             if (iteratingArray[index + 1]) {
-
                 currentDate = new Date(pageViewObject.created_at);
                 forwardDate = new Date(iteratingArray[index + 1].created_at);
                 differenceSeconds = currentDate - forwardDate;
@@ -132,11 +165,11 @@ function savePageViews(parsedBody) {
                 timeDifference: iteratingArray[index + 1] ? differenceSeconds : 0
             };
 
-            newPageViews.push(newPageView);
+            formattedPageViews.push(newPageView);
         });
     }
 
-    return newPageViews;
+    return formattedPageViews;
 }
 
 /**
@@ -144,6 +177,8 @@ function savePageViews(parsedBody) {
  * 
  * @param {Array}    arrayOfPageViews The data to be written to CSV
  * @param {Settings} settings           The settings that have information for the filename
+ *                                      
+ * @author Scott Nicholes                                     
  */
 function convertArrayToCsv(arrayOfPageViews) {
     // Format the data into CSV
