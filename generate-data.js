@@ -20,99 +20,6 @@ var dsv = require('d3-dsv');
 
 
 // REDESIGN START
-function getSettings() {
-    // Load the settings from settings.json
-    var settings = fs.readFile('settings.json', 'utf8');
-
-    // Parse the settings
-    settings = JSON.parse(settings);
-
-    // Here, we shall store our prompts
-    var requestSettingsChange = {
-        properties: {
-            changeSettings: {
-                description: 'Do you want to change the settings before running the program?(yes/no)',
-                type: 'string',
-                pattern: /^(?:yes\b|no\b)/,
-                message: 'Enter only \'yes\' or \'no\''
-            }
-        }
-    }
-
-
-    var changeSettings = {
-        properties: {
-            domain: {
-                description: "Enter Domain(Example: byui)",
-                type: "string",
-                default: settings.domain
-            },
-            course_id: {
-                description: "Enter Course_Id",
-                type: "string",
-                default: settings.course_id
-            },
-            runWithRange: {
-                description: "Run program with a start and end time range for page views?(yes/no)",
-                type: "string",
-                message: "Enter only 'yes' or 'no'",
-                default: settings.runWithRange,
-                pattern: /^(?:yes\b|no\b)/
-            },
-            start_time: {
-                description: "Enter start_time for student page views (Example: 2012-07-19)",
-                type: "string",
-                default: settings.start_time,
-                ask: function () {
-                    return prompt.history('runWithRange').value === 'yes'
-                }
-            },
-            end_time: {
-                description: "Enter end_time for student page views (Example: 2012-07-19)",
-                type: "string",
-                default: settings.end_time,
-                ask: function () {
-                    return prompt.history('runWithRange').value === 'yes'
-                }
-            },
-            accessToken: {
-                description: "Enter request token",
-                type: "string",
-                default: settings.accessToken
-            }
-        }
-    }
-
-    var startWithChangedSettings = {
-        properties: {
-            startProgram: {
-                description: 'Do you want to start the program with the current settings?(yes/no)',
-                type: 'string',
-                pattern: /^(?:yes\b|no\b)/,
-                message: 'Enter only \'yes\' or \'no\''
-            }
-        }
-    }
-
-    var changeSettingsPrompts = [changeSettings, startWithChangedSettings];
-
-    // Prompt the user with the first prompt
-    var startProgramDecision = promptUser(requestSettingsChange);
-
-    if (startProgramDecision === 'no') {
-        // Return the unchanged settings
-        return settings;
-    } else {
-        // Prompt the user to change the settings
-        var modifiedSettingsAndDecision = promptUser(changeSettingsPrompts);
-
-        return modifiedSettingsAndDecision;
-    }
-}
-
-function promptUser(prompt) {
-
-}
 
 function getData(settings) {}
 
@@ -133,8 +40,27 @@ function main() {
     console.log('Welcome to the program!');
     console.log('----------------------------------------');
 
-    var convertedCommentsArray;
+    // BEGIN REDESIGN
+    getSettings(function (error, runObject) {
+        if (!runObject.decision) {
+            endProgram();
+        }
+        
+        // Save the settings
+        var readyToWriteSettings = JSON.stringify(runObject.settings);
+        fs.writeFileSync('settings.json', readyToWriteSettings)
 
+        // Run the program with the settings
+        var data = getData(runObject.settings);
+        
+        saveData(data);
+    });
+
+    // END REDESIGN
+
+
+
+    /*
     // Perform Waterfall Chain of Async operations
     async.waterfall([
     loadSettings,
@@ -249,51 +175,22 @@ function main() {
             return;
         });
     });
+    
+    */
 }
 
-function generateArrayEntry(filename, data, headerData) {
-    var returnObject = {
-        fileName: filename,
-        data: data,
-        headers: headerData
-    }
 
-    return returnObject;
-}
+function getSettings(callback) {
+    var returnObject = {};
 
-/**
- * This function loads the current settings and then prompts the user if 
- * they would like to change the settings.
- * 
- * @param {function} callback The next function in the Waterfall chain.
- * @author Scott Nicholes           
- */
-function loadSettings(callback) {
-    // Load the current settings from settings.json
-    var settingsJson = fs.readFileSync('settings.json', 'utf8');
-    var settings = JSON.parse(settingsJson);
+    // Load the settings from settings.json
+    var settings = fs.readFileSync('settings.json', 'utf8');
 
-    // Append certain elements that cannot be loaded from a file properly
-    settings.properties.start_time.ask = function () {
-        return prompt.history('runWithRange').value === 'yes'
-    }
-    settings.properties.end_time.ask = function () {
-        return prompt.history('runWithRange').value === 'yes'
-    }
-    settings.properties.runWithRange.pattern = /^(?:yes\b|no\b)/
+    // Parse the settings
+    settings = JSON.parse(settings);
 
-    // Display the current settings to the user
-    console.log('Settings to run conversion program with:');
-    console.log('Request Url: ' + settings.properties.requestUrl.default);
-    console.log('Course ID: ' + settings.properties.course_id.default);
-    console.log('Start Program with Time Range for Page Views: ' + settings.properties.runWithRange.default);
-    console.log('Start Time For Page Views: ' + settings.properties.start_time.default);
-    console.log('End Time For Page Views: ' + settings.properties.end_time.default);
-    console.log('Request Token: ' + settings.properties.requestToken.default);
-    console.log('');
-
-    // Prompt body
-    var changeSettingsPrompt = {
+    // Here, we shall store our prompts
+    var requestSettingsChange = {
         properties: {
             changeSettings: {
                 description: 'Do you want to change the settings before running the program?(yes/no)',
@@ -304,74 +201,51 @@ function loadSettings(callback) {
         }
     }
 
-    // Begin prompting user
-    prompt.start();
-    prompt.get(changeSettingsPrompt, function (error, response) {
-        if (response.changeSettings === 'yes') {
-            // Continue the Waterfall to prompt the user for changes
-            callback(null, settings);
-        } else {
-            // There is no error.  We just want to start the program with no changes
-            callback('run_with_no_changes', settings);
+
+    var changeSettingsPrompt = {
+        properties: {
+            domain: {
+                description: "Enter Domain(Example: byui)",
+                type: "string",
+                default: settings.domain
+            },
+            course_id: {
+                description: "Enter Course_Id",
+                type: "string",
+                default: settings.course_id
+            },
+            runWithRange: {
+                description: "Run program with a start and end time range for page views?(yes/no)",
+                type: "string",
+                message: "Enter only 'yes' or 'no'",
+                default: settings.runWithRange,
+                pattern: /^(?:yes\b|no\b)/
+            },
+            start_time: {
+                description: "Enter start_time for student page views (Example: 2012-07-19)",
+                type: "string",
+                default: settings.start_time,
+                ask: function () {
+                    return prompt.history('runWithRange').value === 'yes'
+                }
+            },
+            end_time: {
+                description: "Enter end_time for student page views (Example: 2012-07-19)",
+                type: "string",
+                default: settings.end_time,
+                ask: function () {
+                    return prompt.history('runWithRange').value === 'yes'
+                }
+            },
+            accessToken: {
+                description: "Enter request token",
+                type: "string",
+                default: settings.accessToken
+            }
         }
-    });
-}
+    }
 
-/**
- * Prompt the user to change the settings before the conversion modules
- * are run.
- * 
- * @param {object} settings The Settings to be changed or accepted.
- * @param {function} callback The next function in the Waterfall chain.
- *                            
- * @author Scott Nicholes
- */
-function promptSettings(settings, callback) {
-    prompt.get(settings, function (error, response) {
-        // Save the values that we have set to be the new defaults
-        settings.properties.requestUrl.default = response.requestUrl;
-        settings.properties.course_id.default = response.course_id;
-        settings.properties.start_time.default = response.start_time;
-        settings.properties.end_time.default = response.end_time;
-        settings.properties.requestToken.default = response.requestToken;
-        settings.properties.runWithRange.default = response.runWithRange;
-
-        callback(null, response, settings);
-    });
-
-}
-
-/**
- * Save the settings that we just set.
- * 
- * @param {object} newSettings     The responses to the querys we made in promptSettings.
- * @param {object} defaultSettings The new defaults to be saved.
- * @param {function} callback        The next function in the Waterfall chain.
- */
-function saveSettings(newSettings, defaultSettings, callback) {
-    // Save new defaults
-    var strungSettings = JSON.stringify(defaultSettings)
-    fs.writeFileSync('settings.json', strungSettings);
-
-    // Save new Settings.  Currently, we use the new default file.
-    /*var jsonResponse = JSON.stringify(newSettings);
-    fs.writeFileSync('settingsChanges.txt', jsonResponse);*/
-
-    callback(null, defaultSettings);
-}
-
-/**
- * Prompt the user if they would like to start the conversion modules with the
- * current settings.
- * 
- * @param {Settings} settings The staged settings ready to be used to run the program.
- * @param {function} callback The last function to be called in the Waterfall chain.
- *                            
- * @author Scott Nicholes
- */
-function promptStartProgram(settings, callback) {
-    // Prompt body
-    var startProgramPrompt = {
+    var startWithChangedSettings = {
         properties: {
             startProgram: {
                 description: 'Do you want to start the program with the current settings?(yes/no)',
@@ -382,28 +256,89 @@ function promptStartProgram(settings, callback) {
         }
     }
 
-    // Display settings to the user
-    console.log('\n');
-    console.log('Request Url: ' + settings.properties.requestUrl.default);
-    console.log('Course ID: ' + settings.properties.course_id.default);
-    console.log('Start Program with Time Range for Page Views: ' + settings.properties.runWithRange.default)
-    console.log('Start Time For Page Views: ' + settings.properties.start_time.default);
-    console.log('End Time For Page Views: ' + settings.properties.end_time.default);
-    console.log('Request Token: ' + settings.properties.requestToken.default);
 
-    // Prompt the user
-    prompt.get(startProgramPrompt, function (error, response) {
+    // Prompt the user with the first prompt
+    console.log('Settings to run conversion program with:');
+    console.log('Request Url: ' + settings.domain);
+    console.log('Course ID: ' + settings.course_id);
+    console.log('Start Program with Time Range for Page Views: ' + settings.runWithRange);
+    console.log('Start Time For Page Views: ' + settings.start_time);
+    console.log('End Time For Page Views: ' + settings.end_time);
+    console.log('Request Token: ' + settings.accessToken);
+    console.log('');
+
+    prompt.start();
+    prompt.get(requestSettingsChange, function (error, response) {
         if (error) {
-            callback(error, null, null);
+            console.error('There was an error in the prompting process: ' + error);
+            callback(error, null);
+            return;
         }
-        if (response.startProgram === 'yes') {
-            // Start the program with the new settings
-            callback('run_with_changes', settings, true);
+
+        if (response.changeSettings === 'no') {
+            // Return the unchanged settings
+            returnObject.settings = settings;
+            returnObject.decision = true;
+
+            callback(null, returnObject);
+            return;
         } else {
-            // End the program by sending a false value to response
-            callback(null, settings, false);
+            // Prompt the user to change the settings
+            prompt.get(changeSettingsPrompt, function (error, response) {
+                if (error) {
+                    console.error('There was an error in the prompting process: ' + error);
+                    callback(error, null);
+                    return;
+                }
+
+                // Now we have the new settings vested in response
+                console.log('\n');
+                console.log('Request Url: ' + response.domain);
+                console.log('Course ID: ' + response.course_id);
+                console.log('Start Program with Time Range for Page Views: ' + response.runWithRange)
+                console.log('Start Time For Page Views: ' + response.start_time);
+                console.log('End Time For Page Views: ' + response.end_time);
+                console.log('Request Token: ' + response.requestToken);
+
+                prompt.get(startWithChangedSettings, function (error, decision) {
+                    if (error) {
+                        console.error('There was an error in the prompting process: ' + error);
+                        callback(error, null);
+                        return;
+                    }
+
+                    var runProgram;
+                    if (decision.startProgram === 'yes') {
+                        runProgram = true;
+                    } else {
+                        runProgram = false;
+                    }
+
+                    returnObject.settings = response;
+                    returnObject.decision = runProgram;
+
+                    callback(null, returnObject);
+                    return;
+                });
+            });
         }
     });
+}
+
+
+
+
+
+
+
+function generateArrayEntry(filename, data, headerData) {
+    var returnObject = {
+        fileName: filename,
+        data: data,
+        headers: headerData
+    }
+
+    return returnObject;
 }
 
 function endProgram() {
