@@ -1,3 +1,6 @@
+/*eslint-env node*/
+/*eslint no-console:0, no-unused-vars:0*/
+
 /*************************************************************
  * Generate Data.js
  * This program prompts the user for key information in order
@@ -12,6 +15,11 @@ var async = require('async');
 var reviewTimeAndComments = require('./review-module.js');
 var quizConverter = require('./quiz-module.js');
 var pageViews = require('./page-views-module.js');
+var chalk = require('chalk');
+var dsv = require('d3-dsv');
+
+
+
 
 /**
  * The main driving function of the program.
@@ -35,7 +43,95 @@ function main() {
     saveSettings,
     promptStartProgram
   ], function (error, result, response) {
-        if (error || response !== 'yes') {
+        // Our Second Waterfall Function Declarations
+        function generateReviews(callback) {
+            console.log(chalk.white('Starting review and comments module'));
+            reviewTimeAndComments(result, function (error, data) {
+                if (error) {
+                    console.error(chalk.red('Review and comments ERROR: ' + error));
+                    callback(null, []);
+                    return;
+                }
+
+                console.log(chalk.green('Review and Comments Success'));
+                callback(null, [generateArrayEntry('reviewTimesAndComments.csv', data)]);
+                return;
+            });
+        }
+
+        function generateQuizzes(accumArray, callback) {
+            if (typeof accumArray === 'function') {
+                callback = accumArray;
+                accumArray = [];
+            }
+
+            var props = result.properties;
+
+
+            console.log(chalk.white('Starting quizzes module'));
+            quizConverter(props.requestToken.default, props.course_id.default, props.requestUrl.default, function (error, data, headers) {
+                if (error) {
+                    console.error(chalk.red('Quizzes ERROR: ' + error));
+                    callback(null, accumArray);
+                    return;
+                }
+
+                console.log(chalk.green('Quizzes Success'));
+                accumArray.push(generateArrayEntry('quizzes.csv', data, headers));
+                callback(null, accumArray);
+                return;
+            });
+        }
+
+        function generatePageViews(accumArray, callback) {
+            if (typeof accumArray === 'function') {
+                callback = accumArray;
+                accumArray = [];
+            }
+            
+            console.log(chalk.white('Starting Page Views module'));
+            pageViews(result, function (error, data) {
+                if (error) {
+                    console.error(chalk.red('Page Views ERROR: ' + error));
+                    callback(null, accumArray);
+                    return;
+                }
+
+                console.log(chalk.green('Page Views Success'));
+                //console.log(JSON.parse(chalk.blue(data[0])));
+                accumArray.push(generateArrayEntry('pageViews.csv', data));
+                callback(null, accumArray);
+                return;
+            });
+        }
+
+        function saveCSVs(accumArray, callback) {
+            console.log('');
+            console.log('Writing Files...');
+            console.log('-------------------------');
+
+            for (var i = 0; i < accumArray.length; i++) {
+                // Format the data into CSVs
+                var outputCsv = dsv.csvFormat(accumArray[i].data, accumArray[i].headers);
+
+                // Write out the CSV files
+                var filename = accumArray[i].fileName;
+                try {
+                    fs.writeFileSync(filename, outputCsv);
+                    console.log(chalk.green('Wrote ' + filename));
+                } catch (e) {
+                    console.log(chalk.red('Failed to write ' + filename));
+                    callback(e);
+                    return;
+                }
+            }
+
+            callback();
+            return;
+        }
+
+
+        if (error !== 'run_with_no_changes' || response === false) {
             endProgram();
             return;
         }
@@ -43,63 +139,27 @@ function main() {
         // Run the program
         console.log('');
 
-        var props = result.properties;
+        var functionCalls = [generateReviews, generateQuizzes, generatePageViews, saveCSVs];
 
-        async.waterfall([
-                function (callback) {
-                    reviewTimeAndComments(result, function (error, data) {
-                        callback(null, [generateArrayEntry('reviewTimesAndComments.csv', data)])
-                    });
-                },
-                function (accumArray, callback) {
-                    quizConverter(props.requestToken.default, props.course_id.default, props.requestUrl.default, function (error, data) {
-                        accumArray.push(generateArrayEntry('quizzes.csv', data))
-                        callback(null, accumArray);
-                    });
-                },
-                function (accumArray, callback) {
-                    pageViews(result, function (error, data) {
-                        if (error) {
-                            callback(error, null);
-                            return;
-                        }
+        async.waterfall(functionCalls, function (error) {
+            if (error) {
+                console.error(chalk.red(error));
+            }
 
-                        accumArray.push(generateArrayEntry('pageViews.csv', data));
-                        callback(null, accumArray);
-                    });
-                },
-                function (accumArray, callback) {
-                    accumArray.forEach(function convertArrayToCsv(arrayEntry) {
-                        // Format the data into CSVs
-                        var outputCsv = dsv.csvFormat(arrayEntry.data);
-
-                        // Write out the CSV files
-                        var filename = arrayEntry.fileName;
-                        try {
-                            fs.writeFileSync(filename, outputCsv);
-                            console.log('Wrote ' + filename);
-                        } catch (e) {
-                            callback(e, null);
-                        }
-                    });
-                    callback(null);
-                    }],
-            function (error) {
-                if (error) {
-                    console.error(error);
-                }
-
-            });
-
-        return;
+            endProgram();
+            return;
+        });
     });
 }
 
-function generateArrayEntry(filename, data) {
-    return {
+function generateArrayEntry(filename, data, headerData) {
+    var returnObject = {
         fileName: filename,
-        data: data
+        data: data,
+        headers: headerData
     }
+
+    return returnObject;
 }
 
 /**
@@ -152,7 +212,7 @@ function loadSettings(callback) {
             // Continue the Waterfall to prompt the user for changes
             callback(null, settings);
         } else {
-            // Send the error flag to run with no changes along with the current settings
+            // There is no error.  We just want to start the program with no changes
             callback('run_with_no_changes', settings);
         }
     });
@@ -179,6 +239,7 @@ function promptSettings(settings, callback) {
 
         callback(null, response, settings);
     });
+
 }
 
 /**
@@ -233,11 +294,20 @@ function promptStartProgram(settings, callback) {
 
     // Prompt the user
     prompt.get(startProgramPrompt, function (error, response) {
-        callback(null, settings, response.startProgram);
+        if (error) {
+            callback(error, null, null);
+        }
+        if (response.startProgram === 'yes') {
+            // Start the program with the new settings
+            callback('run_with_changes', settings, true);
+        } else {
+            // End the program by sending a false value to response
+            callback(null, settings, false);
+        }
     });
 }
 
-function endProgram(success) {
+function endProgram() {
     console.log('Finished Program');
 }
 

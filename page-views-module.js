@@ -18,6 +18,7 @@ var qs = require('qs');
 var async = require('async');
 var paginator = require('canvas-pagination');
 var Canvas = require('canvas-api-wrapper');
+var chalk = require('chalk');
 var canvas;
 
 
@@ -32,9 +33,11 @@ var canvas;
 function main(settings, returnCallback) {
     function errorHandler(error) {
         returnCallback(error, null);
+        //return;
     }
 
-    canvas = new Canvas(settings.properties.requestToken.default, settings.properties.requestUrl.default);
+    // Canvas Arguments: <access token>, <domain>, <verbose logging>
+    canvas = new Canvas(settings.properties.requestToken.default, settings.properties.requestUrl.default, false);
 
     var rangeOptions = {};
     if (settings.properties.runWithRange.default === 'yes') {
@@ -46,13 +49,63 @@ function main(settings, returnCallback) {
     //rangeOptions.access_token = settings.properties.requestToken.default;
 
     // First, we perform an Admin only API call to see if the token is Admin
-    call(`/api/v1/accounts/self/roles`, {}, function (rolesError, roles) {
+
+    // BEGIN EXPERIMENT
+    // OK, let's try Promises
+    /*canvas.call(`/api/v1/accounts/self/roles`)
+        .then(function (roles) {
+            if (roles[0].role === 'AccountAdmin') {
+                // We now know that we have an Admin token
+                return true;
+            }
+        })
+        .then(canvas.wrapCall(`courses/${settings.properties.course_id.default}/students`))
+        .then(function (students) {
+            async.mapLimit(students, 5, function (student, callback) {
+                canvas.call(`users/${student.id}/page_views`, rangeOptions)
+                    .then(function (pageViews) {
+                        var newPageViews = savePageViews(pageViews);
+                        callback(null, newPageViews);
+                    })
+                    .catch(function (error) {
+                        callback(error, null);
+                    })
+            }, function (mapError, result) {
+                if (mapError) {
+                    errorHandler(mapError);
+                    return;
+                }
+                var pageViewsOut = result.reduce(function (accum, currentValue) {
+                    return accum.concat(currentValue);
+                }, []);
+
+                return pageViewsOut;
+            })
+        })
+        .then(function (pageViewsOut) {
+            returnCallback(null, pageViewsOut);
+            return;
+        })
+        .catch(function (error) {
+            errorHandler(':)' + error);
+            return;
+        })*/
+
+
+    // END EXPERIMENT
+
+
+
+    canvas.callbackCall(`/api/v1/accounts/self/roles`, {}, 'GET', function (rolesError, roles) {
+        //console.log(roles);
         //console.log(rolesError);
         if (rolesError) {
             if (rolesError === 401) {
                 errorHandler('Code: ' + rolesError + ': Unauthorized.  Please supply an Admin Access Token');
+                return;
             } else {
                 errorHandler('Code: ' + rolesError);
+                return;
             }
             return;
         } else if (!roles) {
@@ -62,15 +115,20 @@ function main(settings, returnCallback) {
             // We now know that we have an Admin token
 
             // Get all the student ids for the course we are looking at
-            call(`courses/${settings.properties.course_id.default}/students`, {}, function (err, students) {
+            canvas.callbackCall(`courses/${settings.properties.course_id.default}/students`, {}, 'GET', function (err, students) {
                 // Check for errors
                 if (err) {
                     errorHandler(err);
                     return;
                 }
-
+                //remove all the test students from the student list because the page_view api returns "unauthorized"
+                
+                students = students.filter(function (student) {
+                    return student.id !== 5403155
+                });
+                
                 // Loop through all the student objects
-                async.mapLimit(students, 10, function (student, callback) {
+                async.mapLimit(students, 5, function (student, callback) {
                         /*
                         Reason this code does not work (Updated 7 June, 2017):
                         Because in canvas-pagination/canvas-pagination.js, the program realizes that we need to get
@@ -87,13 +145,25 @@ function main(settings, returnCallback) {
                                 callback(null, newPageViews);
                             }
                         });
-                        // END EXPERIMENT*/
-
+                        // END EXPERIMENT
+                        */
+                        //console.log(chalk.blue('I am about to do 3rd call in pageViews'));
                         // Get the page views for each student
-                        call(`users/${student.id}/page_views`, rangeOptions, function (pageViewError, pageViews) {
+                        canvas.callbackCall(`users/${student.id}/page_views`, rangeOptions, 'GET', function (pageViewError, pageViews) {
                             // Check for errors
                             if (pageViewError) {
-                                callback(pageViewError, null);
+                                // Parse the error as a JSON Object
+                                var parsedError = JSON.parse(pageViewError);
+                                
+                                // See if the error is just an unauthorized, or if it is something bigger
+                                if (parsedError.status !== 'unauthorized') {
+                                    callback(pageViewError, null);
+                                } else {
+                                    // We are unauthorized, but there is not a fatal error, so just send an empty array
+                                    console.log(chalk.yellow(JSON.stringify(student,null,3)))
+                                    console.log(chalk.yellow('An unauthorized API call was made.  Continuing program...'))
+                                    callback(null, []);  
+                                }
                             } else {
                                 var newPageViews = savePageViews(pageViews);
                                 callback(null, newPageViews);
@@ -146,7 +216,9 @@ function call(apiCall, options, callback) {
 function savePageViews(pageViews) {
     var formattedPageViews = [];
 
-    if (pageViews !== null) {
+    //console.log(pageViews);
+
+    if (pageViews !== null || pageViews !== undefined) {
         pageViews.forEach(function (pageViewObject, index, iteratingArray) {
             var currentDate;
             var forwardDate;

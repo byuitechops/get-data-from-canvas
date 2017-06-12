@@ -20,6 +20,7 @@ var dsv = require('d3-dsv'); // For d3-dsv csv conversion node
 var async = require('async');
 var paginator = require('canvas-pagination');
 var Canvas = require('canvas-api-wrapper');
+var chalk = require('chalk');
 var canvas;
 
 
@@ -32,11 +33,38 @@ var canvas;
  * @author Scott Nicholes                           
  */
 function main(settings, callback) {
+    // Initiate the Canvas instance
+    canvas = new Canvas(settings.properties.requestToken.default, settings.properties.requestUrl.default, false);
+    
     // This is the apiCall we'll use to get all the quiz submissions
     var apiCall = `/api/v1/courses/${settings.properties.course_id.default}/students/submissions/`;
+    
+    // BEGIN EXPERIMENT
+    canvas.callbackCall(apiCall, {
+        "student_ids[]": ["all"],
+        "include[]": ["submission_comments", "assignment", "user"],
+        access_token: settings.properties.requestToken.default
+    }, 'GET', function (error, data) {
+        if (error) {
+            callback(error, null);
+            return;
+        }    
+        
+        // Now we have all the paginated data
+        var arrayOfSubmissions = saveSubmissions(data);
+        //convertArrayToCsv(arrayOfSubmissions);
+        callback(null, arrayOfSubmissions);
+        return;
+    });
+    
+    
+    
+    // END EXPERIMENT
 
+    
+    
     // Paginator will take the base url, apiCall, and a queryObject and then handle the pagination of all the submissions
-    paginator(`https://${settings.properties.requestUrl.default}.instructure.com`, apiCall, {
+    /*paginator(`https://${settings.properties.requestUrl.default}.instructure.com`, apiCall, {
         "student_ids[]": ["all"],
         "include[]": ["submission_comments", "assignment", "user"],
         access_token: settings.properties.requestToken.default
@@ -49,7 +77,7 @@ function main(settings, callback) {
         var arrayOfSubmissions = saveSubmissions(data);
         //convertArrayToCsv(arrayOfSubmissions);
         callback(null, arrayOfSubmissions);
-    });
+    });*/
 }
 
 /**

@@ -12,6 +12,7 @@ var fs = require('fs')
 var qs = require('qs')
 var eachLimit = require('async/eachLimit')
 var Canvas = require('canvas-api-wrapper')
+var chalk = require('chalk')
 var courseID;
 
 
@@ -212,9 +213,15 @@ function printCSV(data, fileName) {
     })
     // also add the questions to the header, so that it dosen't ignore them
     headerOrder = headerOrder.concat(questionHeaders)
+
+    return {
+        data: arr,
+        headers: headerOrder
+    }
+
     // write to our file
-    fs.writeFileSync(fileName, dsv.csvFormat(arr, headerOrder))
-    console.log('Wrote ' + fileName);
+    /*fs.writeFileSync(fileName, dsv.csvFormat(arr, headerOrder))
+    chalk.green(console.log('Wrote ' + fileName));*/
 }
 
 /**
@@ -252,11 +259,11 @@ module.exports = function main(accessToken, course_id, domain, callback) {
             return data;
         })
         .then(data => forEachQuiz(data, canvas))
+        .then(output => printCSV(output, 'quizzes.csv'))
         .then(function (output) {
-            callback(null, output);
+            callback(null, output.data, output.headers);
         })
-        //        .then(output => printCSV(output, 'quizzes.csv'))
         .catch(function (error) {
-            callback(error, null);
+            callback(error);
         });
 }
