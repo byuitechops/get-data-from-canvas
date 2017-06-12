@@ -37,16 +37,16 @@ function main(settings, returnCallback) {
     }
 
     // Canvas Arguments: <access token>, <domain>, <verbose logging>
-    canvas = new Canvas(settings.properties.requestToken.default, settings.properties.requestUrl.default, false);
+    canvas = new Canvas(settings.accessToken, settings.domain, false);
 
     var rangeOptions = {};
-    if (settings.properties.runWithRange.default === 'yes') {
-        rangeOptions.start_time = settings.properties.start_time.default;
-        rangeOptions.end_time = settings.properties.end_time.default;
+    if (settings.runWithRange === 'yes') {
+        rangeOptions.start_time = settings.start_time;
+        rangeOptions.end_time = settings.end_time;
     }
 
     // Uncomment for Experimental code (see below)
-    //rangeOptions.access_token = settings.properties.requestToken.default;
+    //rangeOptions.access_token = settings.accessToken;
 
     // First, we perform an Admin only API call to see if the token is Admin
 
@@ -59,7 +59,7 @@ function main(settings, returnCallback) {
                 return true;
             }
         })
-        .then(canvas.wrapCall(`courses/${settings.properties.course_id.default}/students`))
+        .then(canvas.wrapCall(`courses/${settings.course_id}/students`))
         .then(function (students) {
             async.mapLimit(students, 5, function (student, callback) {
                 canvas.call(`users/${student.id}/page_views`, rangeOptions)
@@ -115,7 +115,7 @@ function main(settings, returnCallback) {
             // We now know that we have an Admin token
 
             // Get all the student ids for the course we are looking at
-            canvas.callbackCall(`courses/${settings.properties.course_id.default}/students`, {}, 'GET', function (err, students) {
+            canvas.callbackCall(`courses/${settings.course_id}/students`, {}, 'GET', function (err, students) {
                 // Check for errors
                 if (err) {
                     errorHandler(err);
@@ -136,7 +136,7 @@ function main(settings, returnCallback) {
                         grab each page one by one (oneByOne()) is not defined yet.
                         // BEGIN EXPERIMENT
                         var apiCall = `/api/v1/users/${student.id}/page_views`;
-                        paginator(`https://${settings.properties.requestUrl.default}.instructure.com`, apiCall, rangeOptions, function (error, exppageViews) {
+                        paginator(`https://${settings.requestUrl}.instructure.com`, apiCall, rangeOptions, function (error, exppageViews) {
                             if (error) {
                                 console.error('There was a page_views reading error: ' + error);
                                 callback(error, null);

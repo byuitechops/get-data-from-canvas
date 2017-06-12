@@ -34,16 +34,16 @@ var canvas;
  */
 function main(settings, callback) {
     // Initiate the Canvas instance
-    canvas = new Canvas(settings.properties.requestToken.default, settings.properties.requestUrl.default, false);
+    canvas = new Canvas(settings.accessToken, settings.domain, false);
     
     // This is the apiCall we'll use to get all the quiz submissions
-    var apiCall = `/api/v1/courses/${settings.properties.course_id.default}/students/submissions/`;
+    var apiCall = `/api/v1/courses/${settings.course_id}/students/submissions/`;
     
     // BEGIN EXPERIMENT
     canvas.callbackCall(apiCall, {
         "student_ids[]": ["all"],
         "include[]": ["submission_comments", "assignment", "user"],
-        access_token: settings.properties.requestToken.default
+        access_token: settings.requestToken
     }, 'GET', function (error, data) {
         if (error) {
             callback(error, null);
@@ -64,10 +64,10 @@ function main(settings, callback) {
     
     
     // Paginator will take the base url, apiCall, and a queryObject and then handle the pagination of all the submissions
-    /*paginator(`https://${settings.properties.requestUrl.default}.instructure.com`, apiCall, {
+    /*paginator(`https://${settings.requestUrl}.instructure.com`, apiCall, {
         "student_ids[]": ["all"],
         "include[]": ["submission_comments", "assignment", "user"],
-        access_token: settings.properties.requestToken.default
+        access_token: settings.requestToken
     }, function (error, data) {
         if (error) {
             callback(error, null);

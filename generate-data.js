@@ -20,13 +20,6 @@ var dsv = require('d3-dsv');
 
 
 // REDESIGN START
-
-function getData(settings) {}
-
-function saveData(data) {}
-
-
-
 /**
  * The main driving function of the program.
  * It first welcomes the user and then continues to prompt the user
@@ -45,139 +38,22 @@ function main() {
         if (!runObject.decision) {
             endProgram();
         }
-        
+
         // Save the settings
         var readyToWriteSettings = JSON.stringify(runObject.settings);
         fs.writeFileSync('settings.json', readyToWriteSettings)
 
         // Run the program with the settings
-        var data = getData(runObject.settings);
-        
-        saveData(data);
-    });
-
-    // END REDESIGN
-
-
-
-    /*
-    // Perform Waterfall Chain of Async operations
-    async.waterfall([
-    loadSettings,
-    promptSettings,
-    saveSettings,
-    promptStartProgram
-  ], function (error, result, response) {
-        // Our Second Waterfall Function Declarations
-        function generateReviews(callback) {
-            console.log(chalk.white('Starting review and comments module'));
-            reviewTimeAndComments(result, function (error, data) {
-                if (error) {
-                    console.error(chalk.red('Review and comments ERROR: ' + error));
-                    callback(null, []);
-                    return;
-                }
-
-                console.log(chalk.green('Review and Comments Success'));
-                callback(null, [generateArrayEntry('reviewTimesAndComments.csv', data)]);
-                return;
-            });
-        }
-
-        function generateQuizzes(accumArray, callback) {
-            if (typeof accumArray === 'function') {
-                callback = accumArray;
-                accumArray = [];
-            }
-
-            var props = result.properties;
-
-
-            console.log(chalk.white('Starting quizzes module'));
-            quizConverter(props.requestToken.default, props.course_id.default, props.requestUrl.default, function (error, data, headers) {
-                if (error) {
-                    console.error(chalk.red('Quizzes ERROR: ' + error));
-                    callback(null, accumArray);
-                    return;
-                }
-
-                console.log(chalk.green('Quizzes Success'));
-                accumArray.push(generateArrayEntry('quizzes.csv', data, headers));
-                callback(null, accumArray);
-                return;
-            });
-        }
-
-        function generatePageViews(accumArray, callback) {
-            if (typeof accumArray === 'function') {
-                callback = accumArray;
-                accumArray = [];
-            }
-
-            console.log(chalk.white('Starting Page Views module'));
-            pageViews(result, function (error, data) {
-                if (error) {
-                    console.error(chalk.red('Page Views ERROR: ' + error));
-                    callback(null, accumArray);
-                    return;
-                }
-
-                console.log(chalk.green('Page Views Success'));
-                //console.log(JSON.parse(chalk.blue(data[0])));
-                accumArray.push(generateArrayEntry('pageViews.csv', data));
-                callback(null, accumArray);
-                return;
-            });
-        }
-
-        function saveCSVs(accumArray, callback) {
-            console.log('');
-            console.log('Writing Files...');
-            console.log('-------------------------');
-
-            for (var i = 0; i < accumArray.length; i++) {
-                // Format the data into CSVs
-                var outputCsv = dsv.csvFormat(accumArray[i].data, accumArray[i].headers);
-
-                // Write out the CSV files
-                var filename = accumArray[i].fileName;
-                try {
-                    fs.writeFileSync(filename, outputCsv);
-                    console.log(chalk.green('Wrote ' + filename));
-                } catch (e) {
-                    console.log(chalk.red('Failed to write ' + filename));
-                    callback(e);
-                    return;
-                }
-            }
-
-            callback();
-            return;
-        }
-
-
-        if (error !== 'run_with_no_changes' || response === false) {
-            endProgram();
-            return;
-        }
-
-        // Run the program
-        console.log('');
-
-        var functionCalls = [generateReviews, generateQuizzes, generatePageViews, saveCSVs];
-
-        async.waterfall(functionCalls, function (error) {
-            if (error) {
-                console.error(chalk.red(error));
-            }
-
+        getData(runObject.settings, function (error, data) {
+            saveData(data);
             endProgram();
             return;
         });
     });
-    
-    */
 }
+// END REDESIGN
+
+
 
 
 function getSettings(callback) {
@@ -238,7 +114,7 @@ function getSettings(callback) {
                 }
             },
             accessToken: {
-                description: "Enter request token",
+                description: "Enter access token",
                 type: "string",
                 default: settings.accessToken
             }
@@ -264,7 +140,7 @@ function getSettings(callback) {
     console.log('Start Program with Time Range for Page Views: ' + settings.runWithRange);
     console.log('Start Time For Page Views: ' + settings.start_time);
     console.log('End Time For Page Views: ' + settings.end_time);
-    console.log('Request Token: ' + settings.accessToken);
+    console.log('Access Token: ' + settings.accessToken);
     console.log('');
 
     prompt.start();
@@ -298,7 +174,7 @@ function getSettings(callback) {
                 console.log('Start Program with Time Range for Page Views: ' + response.runWithRange)
                 console.log('Start Time For Page Views: ' + response.start_time);
                 console.log('End Time For Page Views: ' + response.end_time);
-                console.log('Request Token: ' + response.requestToken);
+                console.log('Access Token: ' + response.accessToken);
 
                 prompt.get(startWithChangedSettings, function (error, decision) {
                     if (error) {
@@ -326,9 +202,104 @@ function getSettings(callback) {
 }
 
 
+function getData(settings, parentCallback) {
+    // Our Waterfall Function Declarations
+    function generateReviews(callback) {
+        console.log(chalk.white('Starting review and comments module'));
+        reviewTimeAndComments(settings, function (error, data) {
+            if (error) {
+                console.error(chalk.red('Review and comments ERROR: ' + error));
+                callback(null, []);
+                return;
+            }
+
+            console.log(chalk.green('Review and Comments Success'));
+            callback(null, [generateArrayEntry('reviewTimesAndComments.csv', data)]);
+            return;
+        });
+    }
+
+    function generateQuizzes(accumArray, callback) {
+        if (typeof accumArray === 'function') {
+            callback = accumArray;
+            accumArray = [];
+        }
 
 
+        console.log(chalk.white('Starting quizzes module'));
+        quizConverter(settings.accessToken, settings.course_id, settings.domain, function (error, data, headers) {
+            if (error) {
+                console.error(chalk.red('Quizzes ERROR: ' + error));
+                callback(null, accumArray);
+                return;
+            }
 
+            console.log(chalk.green('Quizzes Success'));
+            accumArray.push(generateArrayEntry('quizzes.csv', data, headers));
+            callback(null, accumArray);
+            return;
+        });
+    }
+
+    function generatePageViews(accumArray, callback) {
+        if (typeof accumArray === 'function') {
+            callback = accumArray;
+            accumArray = [];
+        }
+
+        console.log(chalk.white('Starting Page Views module'));
+        pageViews(settings, function (error, data) {
+            if (error) {
+                console.error(chalk.red('Page Views ERROR: ' + error));
+                callback(null, accumArray);
+                return;
+            }
+
+            console.log(chalk.green('Page Views Success'));
+            //console.log(JSON.parse(chalk.blue(data[0])));
+            accumArray.push(generateArrayEntry('pageViews.csv', data));
+            callback(null, accumArray);
+            return;
+        });
+    }
+
+    // Run the program
+    console.log('');
+
+    var functionCalls = [/*generateReviews, */ generateQuizzes, generatePageViews];
+
+    async.waterfall(functionCalls, function (error, accumulatedArray) {
+        if (error) {
+            console.error(chalk.red(error));
+        }
+
+        parentCallback(null, accumulatedArray);
+        return;
+    });
+}
+
+function saveData(data) {
+    console.log('');
+    console.log('Writing Files...');
+    console.log('-------------------------');
+
+    for (var i = 0; i < data.length; i++) {
+        // Format the data into CSVs
+        var outputCsv = dsv.csvFormat(data[i].data, data[i].headers);
+
+        // Write out the CSV files
+        var filename = data[i].fileName;
+        try {
+            fs.writeFileSync(filename, outputCsv);
+            console.log(chalk.green('Wrote ' + filename));
+        } catch (e) {
+            console.log(chalk.red('Failed to write ' + filename + ': ' + e));
+            return;
+        }
+    }
+
+    return;
+}
 
 
 function generateArrayEntry(filename, data, headerData) {
