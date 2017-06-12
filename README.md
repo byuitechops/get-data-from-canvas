@@ -24,16 +24,16 @@
 To collect data on how well students are doing on a given quiz
 
 ##### *Calls Needed:*
-- [Get all quiz submissions](https://canvas.instructure.com/doc/api/quiz_submissions.html#method.quizzes/quiz_submissions_api.index)
+- [Get all quiz submissions](https://canvas.instructure.com/doc/api/submissions.html#method.submissions_api.for_students)
 ```
-GET /api/v1/courses/:course_id/quizzes/:quiz_id/submissions
+GET /api/v1/courses/:course_id/students/submissions
 ```
 
 ##### *Explanation of Calls:*
-Returns an array of submissions.  Each submission contains the attributes `score`, `attempt`, `time_spent`, and `finished_at`.  
+Returns all the submissions for a given set of students.  Uses the `student_ids[]=all` and `includes[]=['submission_comments', 'assignment', 'user']` arguments to get the necessary data.
 
 ##### *Limitations:*
-- **BETA** API
+
 
 ##### *CSV Format:*
 |  | Student Name | Student ID | Quiz ID | Number of Attempts | Score | Time Started | Time Finished | Time Spent(in seconds) | Statistics for each Question

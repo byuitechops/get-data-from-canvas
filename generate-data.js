@@ -19,6 +19,105 @@ var chalk = require('chalk');
 var dsv = require('d3-dsv');
 
 
+// REDESIGN START
+function getSettings() {
+    // Load the settings from settings.json
+    var settings = fs.readFile('settings.json', 'utf8');
+
+    // Parse the settings
+    settings = JSON.parse(settings);
+
+    // Here, we shall store our prompts
+    var requestSettingsChange = {
+        properties: {
+            changeSettings: {
+                description: 'Do you want to change the settings before running the program?(yes/no)',
+                type: 'string',
+                pattern: /^(?:yes\b|no\b)/,
+                message: 'Enter only \'yes\' or \'no\''
+            }
+        }
+    }
+
+
+    var changeSettings = {
+        properties: {
+            domain: {
+                description: "Enter Domain(Example: byui)",
+                type: "string",
+                default: settings.domain
+            },
+            course_id: {
+                description: "Enter Course_Id",
+                type: "string",
+                default: settings.course_id
+            },
+            runWithRange: {
+                description: "Run program with a start and end time range for page views?(yes/no)",
+                type: "string",
+                message: "Enter only 'yes' or 'no'",
+                default: settings.runWithRange,
+                pattern: /^(?:yes\b|no\b)/
+            },
+            start_time: {
+                description: "Enter start_time for student page views (Example: 2012-07-19)",
+                type: "string",
+                default: settings.start_time,
+                ask: function () {
+                    return prompt.history('runWithRange').value === 'yes'
+                }
+            },
+            end_time: {
+                description: "Enter end_time for student page views (Example: 2012-07-19)",
+                type: "string",
+                default: settings.end_time,
+                ask: function () {
+                    return prompt.history('runWithRange').value === 'yes'
+                }
+            },
+            accessToken: {
+                description: "Enter request token",
+                type: "string",
+                default: settings.accessToken
+            }
+        }
+    }
+
+    var startWithChangedSettings = {
+        properties: {
+            startProgram: {
+                description: 'Do you want to start the program with the current settings?(yes/no)',
+                type: 'string',
+                pattern: /^(?:yes\b|no\b)/,
+                message: 'Enter only \'yes\' or \'no\''
+            }
+        }
+    }
+
+    var changeSettingsPrompts = [changeSettings, startWithChangedSettings];
+
+    // Prompt the user with the first prompt
+    var startProgramDecision = promptUser(requestSettingsChange);
+
+    if (startProgramDecision === 'no') {
+        // Return the unchanged settings
+        return settings;
+    } else {
+        // Prompt the user to change the settings
+        var modifiedSettingsAndDecision = promptUser(changeSettingsPrompts);
+
+        return modifiedSettingsAndDecision;
+    }
+}
+
+function promptUser(prompt) {
+
+}
+
+function getData(settings) {}
+
+function saveData(data) {}
+
 
 
 /**
@@ -88,7 +187,7 @@ function main() {
                 callback = accumArray;
                 accumArray = [];
             }
-            
+
             console.log(chalk.white('Starting Page Views module'));
             pageViews(result, function (error, data) {
                 if (error) {
