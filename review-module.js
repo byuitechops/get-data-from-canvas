@@ -57,8 +57,6 @@ function main(settings, callback) {
         return;
     });
     
-    
-    
     // END EXPERIMENT
 
     

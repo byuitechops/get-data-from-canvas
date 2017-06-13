@@ -48,53 +48,6 @@ function main(settings, returnCallback) {
     // Uncomment for Experimental code (see below)
     //rangeOptions.access_token = settings.accessToken;
 
-    // First, we perform an Admin only API call to see if the token is Admin
-
-    // BEGIN EXPERIMENT
-    // OK, let's try Promises
-    /*canvas.call(`/api/v1/accounts/self/roles`)
-        .then(function (roles) {
-            if (roles[0].role === 'AccountAdmin') {
-                // We now know that we have an Admin token
-                return true;
-            }
-        })
-        .then(canvas.wrapCall(`courses/${settings.course_id}/students`))
-        .then(function (students) {
-            async.mapLimit(students, 5, function (student, callback) {
-                canvas.call(`users/${student.id}/page_views`, rangeOptions)
-                    .then(function (pageViews) {
-                        var newPageViews = savePageViews(pageViews);
-                        callback(null, newPageViews);
-                    })
-                    .catch(function (error) {
-                        callback(error, null);
-                    })
-            }, function (mapError, result) {
-                if (mapError) {
-                    errorHandler(mapError);
-                    return;
-                }
-                var pageViewsOut = result.reduce(function (accum, currentValue) {
-                    return accum.concat(currentValue);
-                }, []);
-
-                return pageViewsOut;
-            })
-        })
-        .then(function (pageViewsOut) {
-            returnCallback(null, pageViewsOut);
-            return;
-        })
-        .catch(function (error) {
-            errorHandler(':)' + error);
-            return;
-        })*/
-
-
-    // END EXPERIMENT
-
-
 
     canvas.callbackCall(`/api/v1/accounts/self/roles`, {}, 'GET', function (rolesError, roles) {
         //console.log(roles);
@@ -122,11 +75,11 @@ function main(settings, returnCallback) {
                     return;
                 }
                 //remove all the test students from the student list because the page_view api returns "unauthorized"
-                
+
                 students = students.filter(function (student) {
                     return student.id !== 5403155
                 });
-                
+
                 // Loop through all the student objects
                 async.mapLimit(students, 5, function (student, callback) {
                         /*
@@ -147,22 +100,27 @@ function main(settings, returnCallback) {
                         });
                         // END EXPERIMENT
                         */
-                        //console.log(chalk.blue('I am about to do 3rd call in pageViews'));
+
                         // Get the page views for each student
                         canvas.callbackCall(`users/${student.id}/page_views`, rangeOptions, 'GET', function (pageViewError, pageViews) {
                             // Check for errors
                             if (pageViewError) {
                                 // Parse the error as a JSON Object
                                 var parsedError = JSON.parse(pageViewError);
-                                
+
+                                /**
+                                 * The following code is to account for the "Test Student" found when making a
+                                 * page_views API calls on all the students.  The Test Student returns an
+                                 * "unauthorized" error code on the page_views API call done on it.
+                                 **/
                                 // See if the error is just an unauthorized, or if it is something bigger
                                 if (parsedError.status !== 'unauthorized') {
                                     callback(pageViewError, null);
                                 } else {
                                     // We are unauthorized, but there is not a fatal error, so just send an empty array
-                                    console.log(chalk.yellow(JSON.stringify(student,null,3)))
+                                    console.log(chalk.yellow(JSON.stringify(student, null, 3)))
                                     console.log(chalk.yellow('An unauthorized API call was made.  Continuing program...'))
-                                    callback(null, []);  
+                                    callback(null, []);
                                 }
                             } else {
                                 var newPageViews = savePageViews(pageViews);
@@ -180,7 +138,6 @@ function main(settings, returnCallback) {
                         }, []);
 
                         returnCallback(null, pageViewsOut);
-                        //convertArrayToCsv(pageViewsOut);
                     });
             });
         }
@@ -216,8 +173,6 @@ function call(apiCall, options, callback) {
 function savePageViews(pageViews) {
     var formattedPageViews = [];
 
-    //console.log(pageViews);
-
     if (pageViews !== null || pageViews !== undefined) {
         pageViews.forEach(function (pageViewObject, index, iteratingArray) {
             var currentDate;
@@ -246,24 +201,6 @@ function savePageViews(pageViews) {
     }
 
     return formattedPageViews;
-}
-
-/**
- * This function converts the array of Submission Objects into a csv file.
- * 
- * @param {Array}    arrayOfPageViews The data to be written to CSV
- * @param {Settings} settings           The settings that have information for the filename
- *                                      
- * @author Scott Nicholes                                     
- */
-function convertArrayToCsv(arrayOfPageViews) {
-    // Format the data into CSV
-    var pageViewsCsv = dsv.csvFormat(arrayOfPageViews);
-
-    // Write out the CSV file for a certain assignment_id
-    var filename = 'pageViews.csv';
-    fs.writeFileSync(filename, pageViewsCsv);
-    console.log('Wrote ' + filename);
 }
 
 // Export this module

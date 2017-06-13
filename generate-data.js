@@ -18,8 +18,6 @@ var pageViews = require('./page-views-module.js');
 var chalk = require('chalk');
 var dsv = require('d3-dsv');
 
-
-// REDESIGN START
 /**
  * The main driving function of the program.
  * It first welcomes the user and then continues to prompt the user
@@ -33,7 +31,6 @@ function main() {
     console.log('Welcome to the program!');
     console.log('----------------------------------------');
 
-    // BEGIN REDESIGN
     getSettings(function (error, runObject) {
         if (!runObject.decision) {
             endProgram();
@@ -51,9 +48,6 @@ function main() {
         });
     });
 }
-// END REDESIGN
-
-
 
 
 function getSettings(callback) {
@@ -76,7 +70,6 @@ function getSettings(callback) {
             }
         }
     }
-
 
     var changeSettingsPrompt = {
         properties: {
@@ -201,8 +194,21 @@ function getSettings(callback) {
     });
 }
 
-
 function getData(settings, parentCallback) {
+    // Run the program
+    console.log('');
+    var functionCalls = [generateReviews, generateQuizzes, generatePageViews];
+
+    // Perform an async waterfall.  At the end, we will have an accumulated Array with the compiled return objects
+    async.waterfall(functionCalls, function (error, accumulatedArray) {
+        if (error) {
+            console.error(chalk.red(error));
+        }
+
+        parentCallback(null, accumulatedArray);
+        return;
+    });
+
     // Our Waterfall Function Declarations
     function generateReviews(callback) {
         console.log(chalk.white('Starting review and comments module'));
@@ -263,19 +269,15 @@ function getData(settings, parentCallback) {
         });
     }
 
-    // Run the program
-    console.log('');
-
-    var functionCalls = [/*generateReviews, */ generateQuizzes, generatePageViews];
-
-    async.waterfall(functionCalls, function (error, accumulatedArray) {
-        if (error) {
-            console.error(chalk.red(error));
+    function generateArrayEntry(filename, data, headerData) {
+        var returnObject = {
+            fileName: filename,
+            data: data,
+            headers: headerData
         }
 
-        parentCallback(null, accumulatedArray);
-        return;
-    });
+        return returnObject;
+    }
 }
 
 function saveData(data) {
@@ -302,15 +304,6 @@ function saveData(data) {
 }
 
 
-function generateArrayEntry(filename, data, headerData) {
-    var returnObject = {
-        fileName: filename,
-        data: data,
-        headers: headerData
-    }
-
-    return returnObject;
-}
 
 function endProgram() {
     console.log('Finished Program');
